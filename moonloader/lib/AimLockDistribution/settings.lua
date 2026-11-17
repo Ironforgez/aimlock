@@ -5,7 +5,7 @@ local defaults = {
     target_height = 0.3, crosshair_x = 0.53, crosshair_y = 0.4,
     random_aim = true, random_interval_ms = 300, random_seed = 'auto',
     telemetry_enabled = true, telemetry_match_window_ms = 750, telemetry_flush_interval_ms = 1000,
-    gui_enabled = true, gui_command = 'aimlock', gui_log_command = 'aimlog'
+    gui_enabled = true, gui_command = 'apanel'
 }
 local default_distribution = { torso=20, left_arm=20, right_arm=20, left_leg=15, right_leg=15, head=10 }
 local bounds = {
@@ -23,7 +23,7 @@ function Settings.validate(values)
     for key, value in pairs(defaults) do result[key] = value end
     for key, value in pairs(values) do
         if key ~= 'distribution' then
-            if defaults[key] == nil then return nil, 'Pengaturan tidak dikenal: ' .. tostring(key) end
+            if defaults[key] == nil and key ~= 'gui_log_command' then return nil, 'Pengaturan tidak dikenal: ' .. tostring(key) end
             if booleans[key] then
                 if type(value) ~= 'boolean' then return nil, key .. ' harus true atau false.' end
             elseif strings[key] then
@@ -40,10 +40,10 @@ function Settings.validate(values)
                     return nil, key .. ' harus bilangan bulat.'
                 end
             end
-            result[key] = value
+            if key ~= 'gui_log_command' then result[key] = value end
         end
     end
-    if result.gui_command == result.gui_log_command then return nil, 'Command GUI dan log harus berbeda.' end
+    if result.gui_command == 'aimlock' or result.gui_command == 'aimlog' then result.gui_command='apanel' end
     local distribution = values.distribution
     if distribution == nil then distribution = default_distribution end
     local normalized, err = Config.validate({

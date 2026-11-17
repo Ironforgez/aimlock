@@ -2,7 +2,7 @@ local Settings = require 'AimLockDistribution.settings'
 local Store = {}
 local keys = {'enabled','max_distance','fov_radius','target_height','crosshair_x','crosshair_y',
     'random_aim','random_interval_ms','random_seed','telemetry_enabled','telemetry_match_window_ms',
-    'telemetry_flush_interval_ms','gui_enabled','gui_command','gui_log_command'}
+    'telemetry_flush_interval_ms','gui_enabled','gui_command'}
 Store.parts = {'torso','left_arm','right_arm','left_leg','right_leg','head'}
 
 function Store.serialize(values)

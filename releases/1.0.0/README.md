@@ -1,21 +1,23 @@
 # AimLock 1.0.0
 
-Dokumen arsip simulator 1.0.0. Source entrypoint versi ini sekarang disimpan lokal di `moonloader/archive/AimLock1.0.0.source.lua`. Artefak, konfigurasi, serta perintah simulator di bawah tetap berlaku untuk versi 1.0.0; SOP build lama menggambarkan build versi tersebut. Source `moonloader/AimLock.lua` dan alat build aktif sekarang menghasilkan versi kamera 1.1.0, dijelaskan pada [dokumentasi aktif](AimLock.md).
+Dokumen arsip simulator 1.0.0. Paket versi ini berada di `releases/1.0.0/`; source entrypoint arsip tetap lokal di `moonloader/archive/AimLock1.0.0.source.lua`. Artefak, konfigurasi serta perintah simulator di bawah berlaku untuk 1.0.0; SOP build lama menggambarkan build versi tersebut. Versi aktif adalah [1.5.0](../1.5.0/README.md). [Panduan struktur repository](../../docs/release-structure.md).
 
 ## Ruang lingkup
 
-Source lokal `AimLock.lua` menggunakan modul `AimLockDistribution` untuk menghasilkan sampel kategori tubuh berdasarkan probabilitas yang dikonfigurasi. Versi publik adalah [AimLock1.0.0.lua](../moonloader/AimLock1.0.0.lua), yang membundel seluruh modul dalam satu file obfuscated. Simulasi hanya berjalan melalui `Simulation:run()` atau command `simulate`, tanpa mengamati atau memengaruhi combat game. Label tubuh adalah kategori statistik, bukan ID body part pada packet SA-MP.
+Source lokal `AimLock.lua` menggunakan modul `AimLockDistribution` untuk menghasilkan sampel kategori tubuh berdasarkan probabilitas yang dikonfigurasi. Versi publik adalah [AimLock1.0.0.lua](AimLock1.0.0.lua), yang membundel seluruh modul dalam satu file obfuscated. Simulasi hanya berjalan melalui `Simulation:run()` atau command `simulate`, tanpa mengamati atau memengaruhi combat game. Label tubuh adalah kategori statistik, bukan ID body part pada packet SA-MP.
 
 ## Struktur dan tanggung jawab
 
 ```text
-moonloader/
+releases/1.0.0/
   AimLock1.0.0.lua                    artefak distribusi obfuscated
   AimLock1.0.0.manifest.json          SHA256 dan identitas build
-  AimLock.lua                         source lokal, diabaikan Git
+  README.md                          dokumentasi versi ini
   config/
     AimLock.ini                       konfigurasi yang dibaca saat startup
-  lib/AimLockDistribution/             source lokal, diabaikan Git
+moonloader/
+  archive/AimLock1.0.0.source.lua      source simulator lokal, diabaikan Git
+  lib/AimLockDistribution/             modul pengembangan, termasuk modul simulator
     config.lua                        parser INI, default, validasi
     random.lua                        PRNG Park-Miller dengan state per instance
     engine.lua                        pemilihan interval berbobot
@@ -25,7 +27,7 @@ moonloader/
 tests/
   hit_distribution_spec.lua            pengujian core dan stub MoonLoader
 docs/
-  AimLock.md                          arsitektur dan SOP
+  release-structure.md                struktur paket dan SOP build aktif
 tools/
   build-release.cjs                   bundler dan obfuscator
   package.json                       dependensi alat build
@@ -66,7 +68,7 @@ Tidak ada perubahan database, endpoint API, atau deployment otomatis. Tidak ada 
 
 ## Konfigurasi
 
-File yang dibaca adalah `<getWorkingDirectory()>/config/AimLock.ini`. Pada MoonLoader, working directory tersebut adalah direktori MoonLoader. Template lengkap tersedia di [file INI](../moonloader/config/AimLock.ini).
+File yang dibaca adalah `<getWorkingDirectory()>/config/AimLock.ini`. Pada MoonLoader, working directory tersebut adalah direktori MoonLoader. Template lengkap tersedia di [file INI](config/AimLock.ini).
 
 ```ini
 [general]
@@ -226,8 +228,8 @@ Jika fungsi wajib tidak tersedia atau SA-MP/SAMPFUNCS belum dimuat, `main()` ber
 Jalankan dari root repository:
 
 ```powershell
-luajit tests/hit_distribution_spec.lua moonloader/AimLock1.0.0.lua
-lua tests/hit_distribution_spec.lua moonloader/AimLock1.0.0.lua
+luajit tests/hit_distribution_spec.lua releases/1.0.0/AimLock1.0.0.lua
+lua tests/hit_distribution_spec.lua releases/1.0.0/AimLock1.0.0.lua
 ```
 
 Untuk source lokal, jalankan perintah tanpa argumen nama artefak. Pada mode artefak, suite membaca modul langsung dari bundle dengan pemuatan modul eksternal diblokir. Kasus file modul hilang pada source menjadi pembuktian bahwa bundle tetap dapat startup tanpa file modul eksternal.
@@ -270,7 +272,7 @@ npm.cmd run check --prefix tools
 
 Build menggunakan [LuaMin](https://github.com/mathiasbynens/luamin) untuk minifikasi dan penggantian nama variabel lokal, serta [LuaParse](https://github.com/fstirlitz/luaparse) untuk validasi sintaks Lua 5.1 dan lokasi literal string. Enam modul dibundel dalam closure terpisah, kemudian literal string dikonversi ke escape desimal. Metadata, identitas author dari source, nama fungsi global `main`, serta kontrak command tetap dipertahankan. Obfuscation tidak memakai `loadstring`, bytecode, download, atau eksekusi payload eksternal.
 
-Versi filename diambil dari `script_version` pada source. Versi ini menghasilkan `AimLock1.0.0.lua` dengan enam modul dan 164 string yang di-encode. [Manifest build](../moonloader/AimLock1.0.0.manifest.json) memuat SHA256 artefak, INI yang dibagikan, setiap source, dan gabungan source. Header artefak juga memuat hash gabungan source. `check` membangun ulang hasil di memori dan menolak artefak/manifest yang berbeda; file source asli tidak ditimpa. Tidak ada timestamp acak pada hasil build sehingga source yang sama menghasilkan artefak yang sama.
+Versi filename diambil dari `script_version` pada source. Versi ini menghasilkan `AimLock1.0.0.lua` dengan enam modul dan 164 string yang di-encode. [Manifest build](AimLock1.0.0.manifest.json) memuat SHA256 artefak, INI yang dibagikan, setiap source, dan gabungan source. Header artefak juga memuat hash gabungan source. `check` membangun ulang hasil di memori dan menolak artefak/manifest yang berbeda; file source asli tidak ditimpa. Tidak ada timestamp acak pada hasil build sehingga source yang sama menghasilkan artefak yang sama.
 
 Obfuscation mempersulit pembacaan kode dan tidak menjamin kode tidak dapat dipulihkan. Konfigurasi tetap terbaca agar probabilitas dan nama command dapat diedit. Pasang hanya `AimLock1.0.0.lua` bersama `config/AimLock.ini`; jangan menjalankan source dan artefak bersamaan karena keduanya memakai command yang sama.
 

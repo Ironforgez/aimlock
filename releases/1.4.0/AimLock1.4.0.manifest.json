@@ -1,0 +1,91 @@
+{
+  "version": "1.4.0",
+  "artifact": "releases/1.4.0/AimLock1.4.0.lua",
+  "artifact_sha256": "72ffdcfcb30089971d6007e32960857dc0491c05aed1d5f479b4371742596f97",
+  "source_set_sha256": "a91e03bb7818ab6ff401c50d6ba95c323806f1bc0d22c91a447b5bdfe0241536",
+  "sources": [
+    {
+      "path": "moonloader/AimLock.lua",
+      "sha256": "100d56bd92d06f51d7480ead06f0ba5f7dcbbe00b5a2a6470dacc6228ae8ca19"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/config.lua",
+      "sha256": "6e114b400fb737e981019a6478c1a1fb64eca968580c0e916b2b40d5321ad8e5"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/random.lua",
+      "sha256": "ad7ce6bdf047ffe528d9ff874a5be7651053b3e97aa912ac61db0d72169139b4"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/engine.lua",
+      "sha256": "2dd4101cbcaa24361d6043a2dcdc80c678509c76cc4686b8804270e54fcd91e7"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/settings.lua",
+      "sha256": "7673b3f4dff662b42ec27341a7e250d9ebef3acb24af660a6bf5b090ef7769fa"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/aim_point.lua",
+      "sha256": "bfdf7eb0320204ccb752a54e912534303e88b9420191e79f86092cff0094f955"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/camera.lua",
+      "sha256": "08f81ed72aa803d5ba719150540ac98526b27793ef6d05730543140a7f6a0a63"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/controller.lua",
+      "sha256": "34b8f02fb564308dcbc8fa497f68e2e5a39468e00857f731c7297766700d56b2"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/world.lua",
+      "sha256": "8f13578ff1d31d337d9ae729f885342daf0b0442716f342342dad2e83f95592f"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/telemetry.lua",
+      "sha256": "8ad4c0fb30178f80acc36475376d19a283c549b89ffb7ac2151f9234183e7e7a"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/telemetry_observer.lua",
+      "sha256": "0263c63009e910ef8051233d8204d372eb4eed6c305f7c4325e5c0c29ac01704"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/telemetry_journal.lua",
+      "sha256": "f419915c4dab4276df93446d6ab2d05bf5d6d48bd1160029e683da5134133f4e"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/telemetry_runtime.lua",
+      "sha256": "6e38fe7dbc010c1d4ac9869198b807429aee0f024889ea32370b094d7803f3c2"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/config_store.lua",
+      "sha256": "1b51c8146de5a8a65b441aa13fe00f088bc2b5d33ad426b5b559c3dc60cc882a"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/gui_model.lua",
+      "sha256": "15717531b9e4913696c80f312828064cc83be628b4e1fee3b53b145ab4880e74"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/log_view.lua",
+      "sha256": "d2ad2902c851b7da9d27732b19d367d6b97847c3c0875bbc4d54874ce8e27b06"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/gui.lua",
+      "sha256": "ea8f4c898d4868199764af8b9eba512f5aa60ee00c8fcc8bb08277f924e83fdd"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/gui_runtime.lua",
+      "sha256": "70a8b5ddf0d01e9a06f95b7b2cc75974acc6344a1c4f6de424b98e630c1eb40f"
+    }
+  ],
+  "configuration": {
+    "path": "releases/1.4.0/config/AimLock1.4.0.ini",
+    "sha256": "8c9647146b27215b60225cb69acf0b9a8083a9cd6e10b72efa503ed53b6dc2cb"
+  },
+  "modules": 17,
+  "encoded_strings": 682,
+  "tools": {
+    "luamin": "1.0.4",
+    "luaparse": "0.3.1"
+  },
+  "method": "Private module bundle, local identifier renaming, minification, decimal string escapes"
+}

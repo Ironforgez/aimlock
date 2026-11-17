@@ -9,7 +9,7 @@ local function copy(value)
 end
 function Model.new(settings,bridge)
     return setmetatable({draft=copy(settings),current=copy(settings),saved=copy(settings),
-        bridge=bridge,pending=nil,revision=0,message='Konfigurasi dimuat dari INI.'},Model)
+        bridge=bridge,pending=nil,revision=0,message=''},Model)
 end
 function Model:replace(values,message)
     self.draft=copy(values); self.revision=self.revision+1; self.message=message
@@ -31,11 +31,11 @@ end
 function Model:poll()
     local action=self.pending; self.pending=nil
     if not action then return end
-    if action=='discard' then self:replace(self.current,'Draft dikembalikan ke konfigurasi aktif.'); return end
-    if action=='defaults' then self:replace(assert(Settings.validate({})),'Default dimuat ke draft; belum diterapkan.'); return end
+    if action=='discard' then self:replace(self.current,'Draft dibatalkan.'); return end
+    if action=='defaults' then self:replace(assert(Settings.validate({})),'Default dimuat. Belum diterapkan.'); return end
     if action=='reload' then
         local values,err=self.bridge.load()
-        if values then self.saved=copy(values); self:replace(values,'INI dimuat ke draft; belum diterapkan.')
+        if values then self.saved=copy(values); self:replace(values,'INI dimuat. Belum diterapkan.')
         else self.message='Gagal memuat INI: '..tostring(err) end
         return
     end
@@ -50,8 +50,7 @@ function Model:poll()
     local ok; ok,err=self.bridge.apply(values)
     if not ok then self.message='Gagal menerapkan: '..tostring(err); return end
     self.current=copy(values)
-    self:replace(values,action=='save' and 'Tersimpan dan diterapkan. Backup: INI.bak.'
-        or 'Diterapkan untuk sesi ini; gunakan Simpan & Terapkan untuk menyimpan INI.')
+    self:replace(values,action=='save' and 'Tersimpan.' or 'Diterapkan. Belum disimpan.')
 end
 
 return Model

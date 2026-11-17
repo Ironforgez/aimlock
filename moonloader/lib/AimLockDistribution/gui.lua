@@ -1,7 +1,8 @@
 local Store = require 'AimLockDistribution.config_store'
+local Identity = require 'AimLockDistribution.identity'
 local Gui={}
 Gui.__index=Gui
-local pages={'Konfigurasi','Distribusi','Telemetry','Log'}
+local pages={'Pengaturan','Log'}
 local part_labels={torso='Torso',left_arm='Lengan kiri',right_arm='Lengan kanan',
     left_leg='Kaki kiri',right_leg='Kaki kanan',head='Kepala'}
 local event_names={'all','shot','damage_report','correlation_update','shot_window_closed',
@@ -9,7 +10,17 @@ local event_names={'all','shot','damage_report','correlation_update','shot_windo
     'shot_candidates_truncated'}
 
 function Gui.new(imgui,ffi,model,logs,bridge)
-    return setmetatable({ui=imgui,ffi=ffi,model=model,logs=logs,bridge=bridge,opened=imgui.new.bool(false),
+    local display=setmetatable({
+        TextUnformatted=function(value)
+            local text=Identity.display(value)
+            return imgui.TextUnformatted(text,nil)
+        end,
+        TextWrapped=function(format,...)
+            local text=Identity.display(string.format(format,...))
+            return imgui.TextWrapped('%s',text)
+        end
+    },{__index=imgui})
+    return setmetatable({ui=display,ffi=ffi,model=model,logs=logs,bridge=bridge,opened=imgui.new.bool(false),
         page=1,buffers={},revision=-1,auto=imgui.new.bool(true),scale=imgui.new.float(1),
         search=imgui.new.char[128](),target=imgui.new.char[12](),files={}},Gui)
 end
@@ -44,77 +55,79 @@ function Gui:field(key,label,kind,description,values)
         end
         if key=='random_seed' and value~='auto' then value=tonumber(value) or value end
         values[key]=value
+        self.model.message=''
     end
     if description then ui.TextWrapped('%s',description) end
 end
 function Gui:configuration()
     local ui=self.ui
-    ui.TextUnformatted('Konfigurasi tracking')
-    ui.TextWrapped('%s','Status aim sekarang: '..(self.bridge.enabled() and 'ON' or 'OFF')..'. Ctrl + X mengubah status saat panel ditutup.')
-    self:field('enabled','Aktif saat script dimuat','bool')
-    self:field('max_distance','Jarak maksimum (1..300)','float')
-    self:field('fov_radius','Radius FOV (0.01..0.5)','float')
-    self:field('target_height','Offset tinggi (-1..1)','float')
-    self:field('crosshair_x','Crosshair X (0..1)','float')
-    self:field('crosshair_y','Crosshair Y (0..1)','float')
-    ui.Separator()
-    ui.TextUnformatted('GUI dan command (berlaku setelah reload script)')
-    self:field('gui_enabled','Aktifkan GUI saat startup','bool')
-    self:field('gui_command','Command panel tanpa /','text')
-    self:field('gui_log_command','Command log tanpa /','text')
+    self:field('random_aim','Acak titik','bool')
+    self:field('max_distance','Jarak','float')
+    self:field('random_interval_ms','Interval (ms)','int')
+    if ui.CollapsingHeader('Distribusi') then self:distribution() end
+    if ui.CollapsingHeader('Lanjutan') then
+        self:field('enabled','Aktif saat masuk','bool')
+        self:field('fov_radius','Radius FOV','float')
+        self:field('target_height','Offset tinggi','float')
+        self:field('crosshair_x','Crosshair X','float')
+        self:field('crosshair_y','Crosshair Y','float')
+        self:field('random_seed','Seed','text')
+        self:telemetry()
+        self:field('gui_enabled','GUI saat mulai','bool')
+        self:field('gui_command','Command','text')
+        ui.TextWrapped('%s','GUI dan command berubah setelah reload.')
+        ui.PushItemWidth(160); ui.SliderFloat('Ukuran teks',self.scale,1,2,'%.1fx'); ui.PopItemWidth()
+        for _,action in ipairs({{'Muat INI','reload'},{'Default','defaults'},{'Batalkan','discard'}}) do
+            if ui.Button(action[1]) then self.model:request(action[2]) end
+        end
+    end
 end
 function Gui:distribution()
     local ui=self.ui
-    ui.TextUnformatted('Distribusi titik aim')
-    self:field('random_aim','Random aim','bool')
-    self:field('random_interval_ms','Interval ms (100..5000)','int')
-    self:field('random_seed','Seed: auto atau integer','text','Seed tetap mengulang urutan acak setelah penerapan / reload.')
-    ui.Separator()
     for _,key in ipairs(Store.parts) do self:field(key,part_labels[key]..' (%)','float',nil,self.model.draft.distribution) end
-    ui.TextUnformatted(string.format('Total bobot: %.4f%% / 100%%',self.model:total()))
-    ui.TextWrapped('%s','Bobot nol diizinkan. Total harus 100%. Bobot mengatur titik aim dan tidak menjamin hasil hit.')
+    ui.TextUnformatted(string.format('Total: %.4g / 100%%',self.model:total()))
 end
 function Gui:telemetry()
     local ui=self.ui
-    ui.TextUnformatted('Pencatatan tembakan')
-    self:field('telemetry_enabled','Rekam telemetry','bool')
-    self:field('telemetry_match_window_ms','Jendela korelasi ms (50..3000)','int')
-    self:field('telemetry_flush_interval_ms','Interval tulis ms (100..10000)','int')
-    ui.Separator()
+    self:field('telemetry_enabled','Rekam log','bool')
+    self:field('telemetry_match_window_ms','Korelasi (ms)','int')
+    self:field('telemetry_flush_interval_ms','Tulis log (ms)','int')
     ui.TextWrapped('%s',self.bridge.telemetry_status())
-    ui.TextWrapped('%s','Laporan berasal dari client. Status server tetap unknown. Kandidat korelasi bukan bukti hit server.')
-    ui.TextWrapped('%s','Menerapkan konfigurasi memulai sesi log baru dan menutup sesi lama. Pencatatan terpisah dari Ctrl + X.')
-    if ui.Button('Lihat log sesi aktif') then self.page=4; self.bridge.request('current') end
 end
 function Gui:log_page()
     local ui,logs=self.ui,self.logs
-    ui.TextUnformatted('Log tembakan | laporan client, server unknown')
-    if ui.Button('Daftar ulang file') then self.bridge.request('files') end
-    ui.SameLine(); if ui.Button('Sesi aktif') then self.bridge.request('current') end
-    if ui.BeginCombo('File log',logs.path and logs.path:match('[^/\\]+$') or 'Pilih file') then
-        for _,path in ipairs(self.files) do
-            if ui.Selectable(path:match('[^/\\]+$'),path==logs.path) then self.bridge.request('select',path) end
-        end
-        if #self.files==0 then ui.TextUnformatted('Belum ada file log. Aktifkan telemetry dan tunggu flush.') end
-        ui.EndCombo()
-    end
-    ui.Checkbox('Refresh otomatis',self.auto)
+    if ui.Button('Sesi aktif') then self.bridge.request('current') end
+    ui.SameLine()
     if ui.Button('Refresh') then self.bridge.request('refresh') end
-    ui.SameLine(); if ui.Button('Bersihkan tampilan') then self.bridge.request('clear') end
-    ui.TextWrapped('%s','Bersihkan tampilan hanya mengosongkan panel; file log tetap tersimpan.')
-    ui.PushItemWidth(160)
-    if ui.InputText('Cari isi log',self.search,128) then logs.filter=self.ffi.string(self.search) end
-    if ui.InputText('ID target',self.target,12) then logs.target=self.ffi.string(self.target) end
-    if ui.BeginCombo('Event',logs.event) then
-        for _,name in ipairs(event_names) do if ui.Selectable(name,logs.event==name) then logs.event=name end end
-        ui.EndCombo()
-    end
+    ui.PushItemWidth(math.max(120,ui.GetContentRegionAvail().x-80))
+    if ui.InputText('Cari',self.search,128) then logs.filter=self.ffi.string(self.search) end
     ui.PopItemWidth()
-    ui.TextWrapped('%s',logs.status)
+    if ui.CollapsingHeader('Filter & berkas') then
+        ui.PushItemWidth(160)
+        if ui.BeginCombo('Berkas',Identity.log_label(logs.path)) then
+            for _,path in ipairs(self.files) do
+                if ui.Selectable(Identity.log_label(path),path==logs.path) then self.bridge.request('select',path) end
+            end
+            if #self.files==0 then ui.TextUnformatted('Belum ada log. Aktifkan rekaman lalu Refresh.') end
+            ui.EndCombo()
+        end
+        if ui.InputText('ID target',self.target,12) then logs.target=self.ffi.string(self.target) end
+        if ui.BeginCombo('Event',logs.event) then
+            for _,name in ipairs(event_names) do if ui.Selectable(name,logs.event==name) then logs.event=name end end
+            ui.EndCombo()
+        end
+        ui.PopItemWidth()
+        ui.Checkbox('Refresh otomatis',self.auto)
+        if ui.Button('Cari berkas') then self.bridge.request('files') end
+        if ui.Button('Kosongkan tampilan') then self.bridge.request('clear') end
+    end
     local rows=logs:visible()
-    ui.TextUnformatted(string.format('%d terlihat / %d dimuat | %d baris rusak dilewati | %d event lama dilepas',
-        #rows,#logs.rows,logs.skipped,logs.dropped))
-    local height=math.max(90,ui.GetContentRegionAvail().y*0.55)
+    ui.TextWrapped('%s',string.format('%d / %d event | server: unknown',#rows,#logs.rows))
+    if logs.skipped>0 or logs.dropped>0 then
+        ui.TextUnformatted(string.format('Dilewati: %d | Event lama dilepas: %d',logs.skipped,logs.dropped))
+    end
+    if logs.status~='Log terkini.' then ui.TextWrapped('%s',logs.status) end
+    local height=math.max(90,ui.GetContentRegionAvail().y-140*self.scale[0])
     ui.BeginChild('event_rows',ui.ImVec2(0,height),true,ui.WindowFlags.HorizontalScrollbar)
     ui.SetWindowFontScale(self.scale[0])
     ui.Columns(6,'events',true)
@@ -131,12 +144,10 @@ function Gui:log_page()
         end
     end
     ui.Columns(1); ui.EndChild()
-    if #rows==0 then ui.TextWrapped('%s',#logs.rows==0 and 'Belum ada event. Pilih sesi log atau tunggu telemetry menulis data.' or 'Tidak ada event sesuai filter. Kosongkan pencarian / ID atau pilih all.') end
-    ui.TextUnformatted('Detail event (JSON asli)')
-    ui.BeginChild('event_detail',ui.ImVec2(0,0),true)
-    ui.SetWindowFontScale(self.scale[0])
-    ui.TextWrapped('%s',logs.selected and logs.selected.raw or 'Pilih baris untuk melihat waktu, senjata, titik, dan kandidat korelasi.')
-    ui.EndChild()
+    if #rows==0 then ui.TextWrapped('%s',#logs.rows==0 and 'Belum ada event. Pilih Sesi aktif atau tunggu rekaman.' or 'Tidak ada hasil. Periksa filter.') end
+    if ui.CollapsingHeader('Detail') then
+        ui.TextWrapped('%s',logs.selected and logs.selected.raw or 'Pilih satu event.')
+    end
 end
 function Gui:draw()
     self:sync()
@@ -144,37 +155,48 @@ function Gui:draw()
     local display=ui.GetIO().DisplaySize or ui.ImVec2(1280,720)
     local width,height=math.max(320,display.x-24),math.max(240,display.y-24)
     ui.SetNextWindowPos(ui.ImVec2(display.x/2,display.y/2),ui.Cond.FirstUseEver,ui.ImVec2(0.5,0.5))
-    ui.SetNextWindowSize(ui.ImVec2(math.min(1000,width),math.min(700,height)),ui.Cond.FirstUseEver)
+    ui.SetNextWindowSize(ui.ImVec2(math.min(860,width),math.min(580,height)),ui.Cond.FirstUseEver)
     ui.SetNextWindowSizeConstraints(ui.ImVec2(math.min(620,width),math.min(460,height)),ui.ImVec2(width,height))
-    local visible=ui.Begin('AimLock 1.4.0 | Konfigurasi dan Log',self.opened)
+    local visible=ui.Begin('Panel',self.opened)
     if visible then
         ui.SetWindowFontScale(self.scale[0])
         if ui.IsKeyPressed(ui.GetKeyIndex(ui.Key.Escape),false) then self.opened[0]=false end
-        ui.BeginChild('sidebar',ui.ImVec2(140,0),true,ui.WindowFlags.HorizontalScrollbar)
+        local status=(self.bridge.enabled() and 'ON' or 'OFF')..' | Alt + X'
+        local left,right=ui.GetCursorPosX(),ui.GetWindowContentRegionMax().x
+        local author_width=ui.CalcTextSize(Identity.author).x
+        local shared_line=right-left>=author_width+ui.CalcTextSize(status).x+16
+        if shared_line then ui.TextUnformatted(status); ui.SameLine() end
+        ui.SetCursorPosX(math.max(left,right-author_width))
+        ui.TextUnformatted(Identity.author)
+        if not shared_line then ui.TextUnformatted(status) end
+        ui.Separator()
+        ui.BeginChild('sidebar',ui.ImVec2(110,0),false,ui.WindowFlags.HorizontalScrollbar)
         ui.SetWindowFontScale(self.scale[0])
-        ui.TextUnformatted('AimLock 1.4.0'); ui.Separator()
-        for index,name in ipairs(pages) do if ui.Selectable(name,self.page==index) then self.page=index end end
-        ui.Separator(); ui.TextWrapped('%s','Tutup panel untuk memakai Ctrl + X.')
-        ui.PushItemWidth(100); ui.SliderFloat('Ukuran teks',self.scale,1,2,'%.1fx'); ui.PopItemWidth()
-        if ui.Button('Tutup panel') then self.opened[0]=false end
+        for index,name in ipairs(pages) do
+            if ui.Selectable(name,self.page==index) then
+                self.page=index
+                if index==2 and not self.logs.path then self.bridge.request('current') end
+            end
+        end
         ui.EndChild(); ui.SameLine()
         ui.BeginChild('content',ui.ImVec2(0,0),false,ui.WindowFlags.HorizontalScrollbar)
         ui.SetWindowFontScale(self.scale[0])
-        if self.page~=4 then
-            local dirty,unsaved=self.model:state()
-            ui.TextWrapped('%s',dirty and 'Draft belum diterapkan.' or unsaved and 'Konfigurasi aktif belum tersimpan di INI.' or 'Konfigurasi aktif sesuai INI.')
-            for index,button in ipairs({{'Terapkan','apply'},{'Simpan & Terapkan','save'},{'Muat INI','reload'},
-                {'Default','defaults'},{'Batalkan draft','discard'}}) do
-                if index==2 and ui.GetContentRegionAvail().x>420*self.scale[0] then ui.SameLine() end
-                if ui.Button(button[1]) then self.model:request(button[2]) end
-            end
-            ui.TextWrapped('%s',self.model.message)
-            local valid,err=self.model:validate()
-            if not valid then ui.TextWrapped('Perlu diperbaiki: %s',err) end
+        if self.page==1 then
+            ui.BeginChild('settings',ui.ImVec2(0,-90*self.scale[0]),false,ui.WindowFlags.HorizontalScrollbar)
+            ui.SetWindowFontScale(self.scale[0])
+            self:configuration()
+            ui.EndChild()
             ui.Separator()
+            local dirty,unsaved=self.model:state()
+            local valid,err=self.model:validate()
+            ui.TextWrapped('%s',not valid and err or self.model.message~='' and self.model.message
+                or dirty and 'Belum diterapkan.' or unsaved and 'Belum disimpan.' or 'Tersimpan.')
+            if ui.Button('Simpan') then self.model:request('save') end
+            ui.SameLine()
+            if ui.Button('Terapkan') then self.model:request('apply') end
+        else
+            self:log_page()
         end
-        if self.page==1 then self:configuration() elseif self.page==2 then self:distribution()
-        elseif self.page==3 then self:telemetry() else self:log_page() end
         ui.EndChild()
     end
     ui.End()

@@ -1,6 +1,7 @@
+local Identity=require 'AimLockDistribution.identity'
 script_name('AimLock')
-script_author('IronForgez | Arvin_Inc')
-script_version('1.4.0')
+script_author(Identity.author)
+script_version('1.5.1')
 script_description('Aim tracking, weighted aim points, passive telemetry, configuration and log GUI.')
 
 local active_telemetry
@@ -12,7 +13,7 @@ function onExitScript()
 end
 
 local function message(text)
-    sampAddChatMessage('[AimLock] ' .. text, 0xA9D6FFFF)
+    sampAddChatMessage(Identity.message(text), 0xA9D6FFFF)
 end
 
 function main()
@@ -30,12 +31,12 @@ function main()
     }
     for _, name in ipairs(required) do
         if type(_G[name]) ~= 'function' then
-            print('[AimLock] API tidak tersedia: ' .. name)
+            print(Identity.message('API tidak tersedia: ' .. name))
             return
         end
     end
     if not isSampLoaded() or not isSampfuncsLoaded() then
-        print('[AimLock] SA-MP dan SAMPFUNCS diperlukan.')
+        print(Identity.message('SA-MP dan SAMPFUNCS diperlukan.'))
         return
     end
     local ok, modules = pcall(function()
@@ -44,10 +45,10 @@ function main()
             telemetry_runtime = require 'AimLockDistribution.telemetry_runtime',
             gui_runtime = require 'AimLockDistribution.gui_runtime' }
     end)
-    if not ok then print('[AimLock] ' .. tostring(modules)); return end
-    local config_path=getWorkingDirectory() .. '/config/AimLock1.4.0.ini'
+    if not ok then print(Identity.message(modules)); return end
+    local config_path=getWorkingDirectory() .. '/config/AimLock1.5.1.ini'
     local settings, err = modules.settings.load(config_path)
-    if not settings then print('[AimLock] ' .. tostring(err)); return end
+    if not settings then print(Identity.message(err)); return end
     while not isSampAvailable() do wait(100) end
     local world = modules.world.new(settings, _G)
     local controller = modules.controller.new(settings, {
@@ -73,7 +74,7 @@ function main()
         end,
         telemetry_status=function()
             local current=active_telemetry.current
-            return current and current:is_active() and 'Telemetry ON | '..current.log_path
+            return current and current:is_active() and 'Telemetry ON'
                 or 'Telemetry OFF | '..tostring(active_telemetry.last_error or 'Sesi tidak aktif')
         end,
         apply=function(values)
@@ -87,20 +88,11 @@ function main()
         end
     })
     if gui_ok then active_gui=gui else gui_error=gui end
-    if active_gui then
-        message('GUI: '..(#active_gui.commands>0 and table.concat(active_gui.commands,' | ') or 'Command belum tersedia; periksa INI.'))
-    elseif settings.gui_enabled then print('[AimLock] GUI OFF: '..tostring(gui_error)) end
-    message('Siap | Ctrl + X: ON/OFF | Tahan klik kanan untuk lock | Status: '
-        .. (controller.enabled and 'ON' or 'OFF'))
-    message(settings.random_aim and ('Random aim: ON | Interval: ' .. settings.random_interval_ms .. ' ms')
-        or 'Random aim: OFF | Titik tetap')
-    if telemetry then
-        message('Telemetry: ON | Log: logs/'..telemetry.session_id..'.jsonl')
-    elseif settings.telemetry_enabled then
-        print('[AimLock] Telemetry OFF: '..tostring(telemetry_error))
-        message('Telemetry: OFF | Periksa moonloader.log. Aim tracking tetap tersedia.')
-    else
-        message('Telemetry: OFF (konfigurasi)')
+    if not active_gui and settings.gui_enabled then print(Identity.message('GUI OFF: '..tostring(gui_error))) end
+    local panel=active_gui and active_gui.commands[1] or 'Panel OFF'
+    message(panel..' | Alt + X: ON/OFF | '..(controller.enabled and 'ON' or 'OFF'))
+    if not telemetry and settings.telemetry_enabled then
+        print(Identity.message('Telemetry OFF: '..tostring(telemetry_error)))
     end
     while true do
         wait(0)
@@ -121,11 +113,11 @@ function main()
             aiming = weapon >= 22 and weapon <= 32
         end
         local updated, update_error = pcall(controller.step, controller, {
-            ctrl = isKeyDown(0x11), x = isKeyDown(0x58), blocked = blocked, aiming = aiming
+            alt = isKeyDown(0x12), x = isKeyDown(0x58), blocked = blocked, aiming = aiming
         })
         if not updated then
             controller.enabled, controller.target = false, nil
-            print('[AimLock] Dinonaktifkan setelah error: ' .. tostring(update_error))
+            print(Identity.message('Dinonaktifkan setelah error: ' .. tostring(update_error)))
             if ready then message('OFF: error runtime. Periksa moonloader.log.') end
         end
         if not controller.target then world:reset_aim() end

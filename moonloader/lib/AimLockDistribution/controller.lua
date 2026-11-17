@@ -6,7 +6,7 @@ function Controller.new(settings, api)
 end
 
 function Controller:step(input)
-    local chord = input.ctrl and input.x
+    local chord = input.alt and input.x
     local pressed = chord and not self.chord_down
     self.chord_down = chord
     if input.blocked then self.target = nil; return false end

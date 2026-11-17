@@ -1,5 +1,5 @@
 return function()
-    local state={clicks={},edits={},seen={},texts={},depth=0,flags={ConfigFlags=0},style={Colors={}}}
+    local state={clicks={},edits={},seen={},texts={},headers={},depth=0,flags={ConfigFlags=0},style={Colors={}}}
     local function pointer(value) return {[0]=value} end
     local chars=setmetatable({},{__index=function() return function(value) return {value=value or ''} end end})
     local ui={new={bool=pointer,int=pointer,float=pointer,char=chars},
@@ -22,9 +22,23 @@ return function()
     ui.GetIO=function() return state.flags end
     ui.GetStyle=function() return state.style end
     ui.GetContentRegionAvail=function() return {x=700,y=500} end
+    ui.GetCursorPosX=function() return 150 end
+    ui.GetWindowContentRegionMax=function() return {x=840,y=560} end
+    ui.CalcTextSize=function(text) return {x=#text*7,y=14} end
+    ui.SetCursorPosX=function(x) state.author_x=x end
+    ui.CollapsingHeader=function(label)
+        state.seen[label]=true
+        if state.clicks[label] then state.headers[label]=not state.headers[label]; state.clicks[label]=nil end
+        return state.headers[label] or false
+    end
     ui.GetKeyIndex=function(key) return key end
     ui.IsKeyPressed=function() local value=state.escape; state.escape=false; return value or false end
-    for _,name in ipairs({'Begin','BeginChild','BeginCombo','PushItemWidth'}) do
+    ui.Begin=function(title,opened)
+        state.title=title; state.depth=state.depth+1
+        if state.close_window then opened[0]=false; state.close_window=false end
+        return true
+    end
+    for _,name in ipairs({'BeginChild','BeginCombo','PushItemWidth'}) do
         ui[name]=function() state.depth=state.depth+1; return true end
     end
     for _,name in ipairs({'End','EndChild','EndCombo','PopItemWidth'}) do
@@ -34,8 +48,16 @@ return function()
         'Separator','SameLine','Columns','SetColumnWidth','NextColumn','StyleColorsDark'}) do ui[name]=function() end end
     ui.SetNextWindowPos=function(pos) state.window_pos=pos end
     ui.SetNextWindowSize=function(size) state.window_size=size end
-    ui.TextUnformatted=function(value) state.texts[#state.texts+1]=value end
-    ui.TextWrapped=function(format,...) state.texts[#state.texts+1]=string.format(format,...) end
+    ui.TextUnformatted=function(value,text_end)
+        assert(type(value)=='string','TextUnformatted expects a string')
+        assert(text_end==nil,'TextUnformatted expects nil text_end')
+        state.texts[#state.texts+1]=value
+    end
+    ui.TextWrapped=function(format,...)
+        assert(select('#',...)==1,'TextWrapped expects one formatted text argument')
+        assert(type((...))=='string','TextWrapped expects a string')
+        state.texts[#state.texts+1]=string.format(format,...)
+    end
     ui.OnInitialize=function(callback) state.initialize=callback; return {Unsubscribe=function() state.initialize=nil end} end
     ui.OnFrame=function(condition,draw)
         state.condition=condition; state.draw=draw
