@@ -2,6 +2,7 @@ local Model = require 'AimLockDistribution.gui_model'
 local Store = require 'AimLockDistribution.config_store'
 local View = require 'AimLockDistribution.log_view'
 local Gui = require 'AimLockDistribution.gui'
+local Identity = require 'AimLockDistribution.identity'
 local Runtime={}
 local Session={}
 Session.__index=Session
@@ -63,7 +64,7 @@ function Runtime.start(settings,api,bridge)
     })
     local function fail(err)
         self.failed=true; self.gui.opened[0]=false; unwind()
-        api.print('[AimLock] GUI OFF: '..tostring(err))
+        api.print(Identity.message('GUI OFF: '..tostring(err)))
     end
     self.initializer=imgui.OnInitialize(function()
         local initialized,err=pcall(self.gui.initialize,self.gui)
@@ -74,21 +75,21 @@ function Runtime.start(settings,api,bridge)
         if not drawn then fail(err) end
     end)
     self.frame.LockPlayer=true
-    local function register(name,page)
+    local function register(name)
         local command_ok,result=pcall(function()
             if api.sampIsChatCommandDefined(name) then return nil end
             return api.sampRegisterChatCommand(name,function()
                 if self.failed then bridge.message('GUI OFF: periksa moonloader.log dan reload script.'); return end
-                self.gui:open(page)
+                self.gui:open()
                 self.requests[#self.requests+1]={'files'}
-                if page==4 or not self.logs.path then self.requests[#self.requests+1]={'current'} end
+                if not self.logs.path then self.requests[#self.requests+1]={'current'} end
             end)
         end)
         if command_ok and result==true then
             self.commands[#self.commands+1]='/'..name
         else bridge.message('Command /'..name..' tidak didaftarkan (bentrok / gagal). Ubah nama di INI lalu reload.') end
     end
-    register(settings.gui_command,1); register(settings.gui_log_command,4)
+    register(settings.gui_command)
     return self
 end
 function Session:is_open() return not self.failed and self.gui:is_open() end
@@ -136,12 +137,12 @@ function Session:poll(now,visible)
             elseif action=='clear' then self.logs:clear()
             elseif action=='refresh' then refresh=true end
         end
-        if refresh or self:is_open() and self.gui.page==4 and self.gui.auto[0]
+        if refresh or self:is_open() and self.gui.page==2 and self.gui.auto[0]
             and (not self.last_poll or (now-self.last_poll)%4294967296>=500) then
             self.logs:poll(); self.last_poll=now
         end
     end)
-    if not ok then self.model.message='Operasi GUI gagal: '..tostring(err); self.api.print('[AimLock] '..self.model.message) end
+    if not ok then self.model.message='Operasi GUI gagal: '..tostring(err); self.api.print(Identity.message(self.model.message)) end
 end
 function Session:close()
     self.gui.opened[0]=false

@@ -1,6 +1,7 @@
 local Telemetry = require 'AimLockDistribution.telemetry'
 local Observer = require 'AimLockDistribution.telemetry_observer'
 local Journal = require 'AimLockDistribution.telemetry_journal'
+local Identity = require 'AimLockDistribution.identity'
 local Runtime = {}
 local Manager={}
 Manager.__index=Manager
@@ -23,7 +24,7 @@ function Manager:configure(settings)
     local ok,instance,err=pcall(function()
         local available,api_error=Observer.available(self.api)
         if not available then return nil,api_error end
-        local journal,journal_error=Journal.new(self.api,'1.4.0',self.files)
+        local journal,journal_error=Journal.new(self.api,Identity.version,self.files)
         if not journal then return nil,journal_error end
         if not self.observer then
             if self.attach_attempted then return nil,'Observer gagal terpasang; reload script diperlukan.' end
@@ -34,10 +35,10 @@ function Manager:configure(settings)
         end
         if not self.observer.active then return nil,'Observer nonaktif; reload script diperlukan.' end
         local telemetry=Telemetry.new(settings,{
-            start_ms=self.api.getGameTimer(),session_id=journal.session_id,version='1.4.0',
+            start_ms=self.api.getGameTimer(),session_id=journal.session_id,version=Identity.version,
             write_batch=function(events) return journal:append(events) end,
             on_error=function(message)
-                self.last_error=message; self.api.print('[AimLock] Telemetry OFF: '..message)
+                self.last_error=message; self.api.print(Identity.message('Telemetry OFF: '..message))
             end
         })
         telemetry.log_path=journal.path

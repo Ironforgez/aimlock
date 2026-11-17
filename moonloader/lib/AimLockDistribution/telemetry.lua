@@ -1,3 +1,4 @@
+local Identity = require 'AimLockDistribution.identity'
 local Telemetry = {}
 Telemetry.__index = Telemetry
 local modulus = 4294967296
@@ -33,7 +34,7 @@ function Telemetry.new(settings, options)
         session_id=options.session_id, writer=options.write_batch, on_error=options.on_error },Telemetry)
     local distribution={}
     for key,value in pairs(settings.distribution) do distribution[key]=value end
-    self:emit('session_start',{version=options.version or '1.4.0',random_aim=settings.random_aim,
+    self:emit('session_start',{version=options.version or Identity.version,random_aim=settings.random_aim,
         random_interval_ms=settings.random_interval_ms,distribution=distribution,
         match_window_ms=self.window,observation='client_outgoing_only'})
     return self
