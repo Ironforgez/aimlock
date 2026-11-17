@@ -48,8 +48,16 @@ return function()
         'Separator','SameLine','Columns','SetColumnWidth','NextColumn','StyleColorsDark'}) do ui[name]=function() end end
     ui.SetNextWindowPos=function(pos) state.window_pos=pos end
     ui.SetNextWindowSize=function(size) state.window_size=size end
-    ui.TextUnformatted=function(value) state.texts[#state.texts+1]=value end
-    ui.TextWrapped=function(format,...) state.texts[#state.texts+1]=string.format(format,...) end
+    ui.TextUnformatted=function(value,text_end)
+        assert(type(value)=='string','TextUnformatted expects a string')
+        assert(text_end==nil,'TextUnformatted expects nil text_end')
+        state.texts[#state.texts+1]=value
+    end
+    ui.TextWrapped=function(format,...)
+        assert(select('#',...)==1,'TextWrapped expects one formatted text argument')
+        assert(type((...))=='string','TextWrapped expects a string')
+        state.texts[#state.texts+1]=string.format(format,...)
+    end
     ui.OnInitialize=function(callback) state.initialize=callback; return {Unsubscribe=function() state.initialize=nil end} end
     ui.OnFrame=function(condition,draw)
         state.condition=condition; state.draw=draw

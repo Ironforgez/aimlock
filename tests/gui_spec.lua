@@ -257,6 +257,21 @@ test('render exception unwinds UI scopes and disables GUI without throwing into 
     s.commands.apanel(); s.fake.ui.InputFloat=function() error('Injected rendering failure') end
     s.fake.render(); equal(runtime:is_open(),false); equal(#s.prints,1); equal(s.fake.depth,0)
 end)
+test('identity display returns exactly one string with or without replacements',function()
+    for _,value in ipairs({'plain text','AimLock','AimLock AimLock','aimlock_enabled','100% loaded'}) do
+        equal(select('#',Identity.display(value)),1)
+        equal(type(Identity.display(value)),'string')
+        equal(select('#',Identity.log_label(value)),1)
+    end
+end)
+test('GUI text boundaries ignore extra helper results before reaching native bindings',function()
+    local fake,s,view,gui,requests,draw=render_fixture()
+    local original=Identity.display
+    Identity.display=function(value) return original(value),3 end
+    local ok,err=pcall(draw)
+    Identity.display=original
+    assert(ok,err); assert(#fake.texts>0)
+end)
 test('author sits at upper right and visible UI omits script branding including old logs',function()
     local fake,s,view,gui,requests,draw=render_fixture()
     draw(); equal(fake.title,'Panel')

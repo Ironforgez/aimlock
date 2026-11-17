@@ -1,8 +1,10 @@
-# AimLock 1.5.0
+# AimLock 1.5.1
 
 Penguncian arah kamera ke pemain SA-MP yang terlihat dekat crosshair, dengan **random aim berbobot selama lock** dan toggle **Alt + X**. Status awal **OFF**. Setelah ON, tahan **klik kanan** untuk mempertahankan pemain yang sama; titik aim memilih ulang torso, lengan, kaki, atau kepala setiap 300 ms secara default.
 
-Versi 1.5.0 menyederhanakan GUI menjadi dua menu, **Pengaturan** dan **Log**, melalui **`/apanel`**. Opsi lanjutan dilipat, author **IronForgez | Arvin_Inc** tampil di kanan atas, dan chat memakai prefix `[IronForgez | Arvin_Inc]`. Nama AimLock dipertahankan untuk identitas file/script dan data internal; tampilan panel/chat memakai identitas author. Ctrl + X dan dua command lama sudah diganti.
+Versi 1.5.1 memperbaiki panel yang langsung menjadi GUI OFF pada bundle 1.5.0 akibat argumen numerik tambahan ke `TextUnformatted`. Detail penyebab, perbaikan dan pengujian FFI tersedia di [catatan 1.5.1](releases/1.5.1/README.md).
+
+Panel tetap memakai dua menu, **Pengaturan** dan **Log**, melalui **`/apanel`**. Opsi lanjutan dilipat, author **IronForgez | Arvin_Inc** tampil di kanan atas, dan chat memakai prefix `[IronForgez | Arvin_Inc]`. Nama AimLock dipertahankan untuk identitas file/script dan data internal; tampilan panel/chat memakai identitas author. Toggle tetap **Alt + X** seperti versi 1.5.0.
 
 Versi [1.4.0](releases/1.4.0/README.md) memperkenalkan GUI. Versi [1.3.0](releases/1.3.0/README.md) memperkenalkan telemetry. Versi [1.1.0](releases/1.1.0/README.md) memakai satu titik tetap. Versi [1.2.0](releases/1.2.0/README.md) menghubungkan engine Weighted Random lama dengan penguncian kamera. Versi [1.0.0](releases/1.0.0/README.md) tetap merupakan arsip simulator distribusi hit.
 
@@ -16,11 +18,12 @@ releases/
   1.3.0/
   1.4.0/
   1.5.0/
-    AimLock1.5.0.lua
-    AimLock1.5.0.manifest.json
+  1.5.1/
+    AimLock1.5.1.lua
+    AimLock1.5.1.manifest.json
     README.md
     config/
-      AimLock1.5.0.ini
+      AimLock1.5.1.ini
 moonloader/
   AimLock.lua                    source pengembangan lokal
   lib/AimLockDistribution/        modul pengembangan lokal
@@ -30,21 +33,21 @@ Setiap folder versi berisi script obfuscated, manifest, dokumentasi dan konfigur
 
 ## Instalasi
 
-Siapkan GTA San Andreas Windows, SA-MP, MoonLoader, dan SAMPFUNCS yang kompatibel. Pilih satu folder versi di `releases/`. Untuk 1.5.0, salin `releases/1.5.0/AimLock1.5.0.lua` ke `moonloader/` game dan `releases/1.5.0/config/AimLock1.5.0.ini` ke `moonloader/config/` game:
+Siapkan GTA San Andreas Windows, SA-MP, MoonLoader, dan SAMPFUNCS yang kompatibel. Pilih satu folder versi di `releases/`. Untuk 1.5.1, salin `releases/1.5.1/AimLock1.5.1.lua` ke `moonloader/` game dan `releases/1.5.1/config/AimLock1.5.1.ini` ke `moonloader/config/` game. Pengguna 1.5.0 dapat menyalin INI lama menjadi `AimLock1.5.1.ini` untuk mempertahankan pengaturan:
 
 ```text
 GTA San Andreas/
   moonloader/
-    AimLock1.5.0.lua
+    AimLock1.5.1.lua
     config/
-      AimLock1.5.0.ini
+      AimLock1.5.1.ini
     lib/
       mimgui/          # dependensi GUI, dari ZIP resmi
 ```
 
-- [Unduh AimLock1.5.0.lua](releases/1.5.0/AimLock1.5.0.lua)
-- [Unduh AimLock1.5.0.ini](releases/1.5.0/config/AimLock1.5.0.ini)
-- [Manifest SHA256](releases/1.5.0/AimLock1.5.0.manifest.json)
+- [Unduh AimLock1.5.1.lua](releases/1.5.1/AimLock1.5.1.lua)
+- [Unduh AimLock1.5.1.ini](releases/1.5.1/config/AimLock1.5.1.ini)
+- [Manifest SHA256](releases/1.5.1/AimLock1.5.1.manifest.json)
 - [mimgui v1.7.1 resmi](https://github.com/THE-FYP/mimgui/releases/download/v1.7.1/mimgui-v1.7.1.zip): ekstrak folder `mimgui` ke `moonloader/lib/`, termasuk DLL dan semua file Lua di dalamnya.
 
 Pasang hanya satu versi script. Pindahkan source `AimLock.lua` dan versi distribusi lama keluar dari folder MoonLoader jika memasang versi ini. Folder `lib/AimLockDistribution` tidak diperlukan untuk versi obfuscated; delapan belas modul sudah dibundel. Folder `lib/mimgui` diperlukan untuk GUI. Jika mimgui atau API GUI tidak tersedia, script tetap menggunakan INI dan Alt + X, dengan alasan kegagalan di `moonloader.log`. File JSON manifest adalah metadata build dan tidak perlu dipasang. `ffi` sudah merupakan bagian LuaJIT; jangan memasang file ffi dari sumber lain.
@@ -76,7 +79,7 @@ Log menampilkan Sesi aktif, Refresh, pencarian dan tabel. **Filter & berkas** me
 
 ## Shot Telemetry
 
-Dengan `telemetry_enabled=true`, log dibuat otomatis di `moonloader/logs/AimLock1.5.0-<waktu>-<game_ms>-<urutan>.jsonl`. File JSONL adalah hasil pengamatan yang dibuat saat bermain, bukan file instalasi yang perlu disalin ke `lib`. Satu baris memuat satu event JSON. Pencatatan berjalan juga saat aim tracking OFF agar tembakan biasa dapat dibandingkan dengan mode ON. Nama/path/identitas internal ditampilkan sebagai alias netral dalam GUI; isi berkas asli tetap dipertahankan.
+Dengan `telemetry_enabled=true`, log dibuat otomatis di `moonloader/logs/AimLock1.5.1-<waktu>-<game_ms>-<urutan>.jsonl`. File JSONL adalah hasil pengamatan yang dibuat saat bermain, bukan file instalasi yang perlu disalin ke `lib`. Satu baris memuat satu event JSON. Pencatatan berjalan juga saat aim tracking OFF agar tembakan biasa dapat dibandingkan dengan mode ON. Nama/path/identitas internal ditampilkan sebagai alias netral dalam GUI; isi berkas asli tetap dipertahankan.
 
 `shot` menyimpan snapshot titik pilihan dan laporan BulletSync; `damage_report` menyimpan body part serta damage yang dilaporkan client. `correlation_update` memberi kandidat hubungan berdasarkan ID pemain, senjata, dan waktu. Korelasi tembakan cepat bisa ambigu. Tidak adanya laporan pasangan tidak langsung diberi label miss, dan **laporan client bukan konfirmasi damage server**. Semua event memakai `server_status=unknown`.
 
@@ -84,7 +87,7 @@ Observer memulihkan posisi baca bitstream dan tidak mengganti payload atau memba
 
 ## Konfigurasi
 
-Gunakan `/apanel`, atau edit `moonloader/config/AimLock1.5.0.ini` lalu pilih Lanjutan > Muat INI dan Terapkan (alternatif: reload script). Pengaturan random aim, telemetry, dan GUI:
+Gunakan `/apanel`, atau edit `moonloader/config/AimLock1.5.1.ini` lalu pilih Lanjutan > Muat INI dan Terapkan (alternatif: reload script). Pengaturan random aim, telemetry, dan GUI:
 
 ```ini
 [aimlock]
@@ -116,14 +119,15 @@ Titik target memakai offset posisi ped, bukan bone tracking. Senjata scope/ID 33
 
 ## Pengembangan dan verifikasi
 
-Update 1.5.0 mempublikasikan bundle obfuscated, konfigurasi, manifest, tes dan dokumentasi. Perubahan source terbaru pada `moonloader/AimLock.lua` dan `moonloader/lib/AimLockDistribution/` tetap lokal. Snapshot source lama sudah tercatat di repository melalui commit sebelum update ini; file/history tersebut tidak dihapus oleh perubahan GUI. Build 1.5.0 memerlukan source terbaru lokal, bukan snapshot lama itu. Log runtime diabaikan melalui `moonloader/logs/.gitignore`. Obfuscation mempersulit pembacaan dan tidak menjamin kode tidak dapat dipulihkan.
+Update 1.5.1 mempublikasikan bundle obfuscated, konfigurasi, manifest, tes dan dokumentasi. Perubahan source terbaru pada `moonloader/AimLock.lua` dan `moonloader/lib/AimLockDistribution/` tetap lokal. Snapshot source lama sudah tercatat di repository melalui commit sebelum update ini; file/history tersebut tidak dihapus oleh perbaikan ini. Build 1.5.1 memerlukan source terbaru lokal, bukan snapshot lama itu. Log runtime diabaikan melalui `moonloader/logs/.gitignore`. Obfuscation mempersulit pembacaan dan tidak menjamin kode tidak dapat dipulihkan.
 
 ```powershell
 # Tes bundle; tidak memerlukan source lokal:
-luajit tests/aimlock_spec.lua releases/1.5.0/AimLock1.5.0.lua
-luajit tests/shot_telemetry_spec.lua releases/1.5.0/AimLock1.5.0.lua
-luajit tests/gui_spec.lua releases/1.5.0/AimLock1.5.0.lua
-luajit tests/windows_io_spec.lua releases/1.5.0/AimLock1.5.0.lua
+luajit tests/aimlock_spec.lua releases/1.5.1/AimLock1.5.1.lua
+luajit tests/shot_telemetry_spec.lua releases/1.5.1/AimLock1.5.1.lua
+luajit tests/gui_spec.lua releases/1.5.1/AimLock1.5.1.lua
+luajit tests/gui_ffi_spec.lua releases/1.5.1/AimLock1.5.1.lua
+luajit tests/windows_io_spec.lua releases/1.5.1/AimLock1.5.1.lua
 
 # Build ulang; memerlukan source lokal:
 npm.cmd ci --prefix tools --ignore-scripts --no-audit --no-fund
@@ -131,4 +135,4 @@ npm.cmd run build --prefix tools
 npm.cmd run check --prefix tools
 ```
 
-[Dokumentasi GUI minimal 1.5.0, arsitektur dan SOP](releases/1.5.0/README.md) menjelaskan perubahan terbaru. [Dokumentasi GUI 1.4.0](releases/1.4.0/README.md) dan [telemetry 1.3.0](releases/1.3.0/README.md) menjadi referensi versi sebelumnya. Tes aim/telemetry/GUI memakai stub MoonLoader dan mimgui; tes Windows I/O memakai kernel32 dan file sementara nyata. Pengujian tampilan serta input langsung di GTA/SA-MP belum dijalankan.
+[Catatan perbaikan panel 1.5.1](releases/1.5.1/README.md) menjelaskan bug dan tes regresi. [Dokumentasi GUI minimal 1.5.0](releases/1.5.0/README.md), [GUI 1.4.0](releases/1.4.0/README.md) dan [telemetry 1.3.0](releases/1.3.0/README.md) menjadi referensi versi sebelumnya. Tes aim/telemetry/GUI memakai stub MoonLoader dan mimgui; tes batas FFI dan Windows I/O memakai LuaJIT dengan signature native/kernel32 nyata. Log kegagalan dalam game sudah dianalisis, tetapi tampilan serta input langsung setelah perbaikan belum diuji di GTA/SA-MP.

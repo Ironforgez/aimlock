@@ -1,6 +1,6 @@
 package.path = './moonloader/lib/?.lua;' .. package.path
 local release = arg and arg[1]
-local expected_version=release and release:match('AimLock(%d+%.%d+%.%d+)%.lua') or '1.5.0'
+local expected_version=release and release:match('AimLock(%d+%.%d+%.%d+)%.lua') or '1.5.1'
 local entrypoint = release or './moonloader/AimLock.lua'
 local function load_entry(env)
     env.script_name = function(value) env.name = value end

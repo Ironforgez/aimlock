@@ -1,5 +1,7 @@
 # AimLock 1.5.0: panel minimal dan identitas author
 
+Arsip 1.5.0. Bundle versi ini memiliki bug argumen `TextUnformatted` yang dapat membuat panel langsung GUI OFF. Gunakan [1.5.1](../1.5.1/README.md) untuk perbaikannya. Hasil tes di bawah merupakan catatan suite sebelum kontrak argumen FFI diperketat.
+
 Paket repository berada di `releases/1.5.0/`, termasuk script, manifest, `config/` dan README ini. [Panduan struktur repository dan SOP build](../../docs/release-structure.md). Lokasi file setelah dipasang dalam game tetap mengikuti prosedur instalasi di bawah.
 
 Versi ini mengganti antarmuka 1.4.0 dengan panel dua menu: Pengaturan dan Log. Command default menjadi `/apanel`, toggle tracking menjadi Alt + X. Identitas pada chat dan kanan atas panel mengikuti metadata author: **IronForgez | Arvin_Inc**. Nama file dan `script_name` tetap AimLock.

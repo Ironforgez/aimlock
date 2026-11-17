@@ -10,6 +10,7 @@ Paket distribusi dikelompokkan berdasarkan nomor versi di `releases/<versi>/`. P
 | 1.3.0 | [releases/1.3.0](../releases/1.3.0/README.md) | Passive shot telemetry |
 | 1.4.0 | [releases/1.4.0](../releases/1.4.0/README.md) | GUI konfigurasi/log |
 | 1.5.0 | [releases/1.5.0](../releases/1.5.0/README.md) | Panel minimal, apanel, Alt + X |
+| 1.5.1 | [releases/1.5.1](../releases/1.5.1/README.md) | Perbaikan argumen teks GUI/FFI pada bundle 1.5.0 |
 
 Setiap paket berisi `AimLock<versi>.lua`, `AimLock<versi>.manifest.json`, `README.md` dan `config/AimLock<versi>.ini`. Pengecualian 1.0.0 adalah nama INI `config/AimLock.ini` karena itulah nama yang dibaca simulator. Artifact/manifest 1.0.0 berasal dari arsip obfuscated lokal yang checksum-nya sudah diverifikasi; source arsip `.source.lua` tetap pada arsip lokal.
 
@@ -36,17 +37,18 @@ Build memerlukan source terbaru lokal dan template `releases/<versi>/config/AimL
 Jalankan dari root repo. Jalur bundle sekarang berada pada folder rilis:
 
 ```powershell
-luajit tests/aimlock_spec.lua releases/1.5.0/AimLock1.5.0.lua
-luajit tests/shot_telemetry_spec.lua releases/1.5.0/AimLock1.5.0.lua
-luajit tests/gui_spec.lua releases/1.5.0/AimLock1.5.0.lua
-luajit tests/windows_io_spec.lua releases/1.5.0/AimLock1.5.0.lua
+luajit tests/aimlock_spec.lua releases/1.5.1/AimLock1.5.1.lua
+luajit tests/shot_telemetry_spec.lua releases/1.5.1/AimLock1.5.1.lua
+luajit tests/gui_spec.lua releases/1.5.1/AimLock1.5.1.lua
+luajit tests/gui_ffi_spec.lua releases/1.5.1/AimLock1.5.1.lua
+luajit tests/windows_io_spec.lua releases/1.5.1/AimLock1.5.1.lua
 luajit tests/hit_distribution_spec.lua releases/1.0.0/AimLock1.0.0.lua
 ```
 
-Fixture main pada suite meniru working directory instalasi dengan akar paket `releases/<versi>`, sehingga entry membaca INI dari `config/` seperti dalam game. Suite tidak mengubah path runtime pada script. Suite tracking/telemetry/GUI saat ini menargetkan 1.5.0; pengujian versi kamera lama memakai suite dari commit versi tersebut, sebagaimana dicatat pada dokumentasi arsip.
+Fixture main pada suite meniru working directory instalasi dengan akar paket `releases/<versi>`, sehingga entry membaca INI dari `config/` seperti dalam game. Suite tidak mengubah path runtime pada script. Suite tracking/telemetry/GUI saat ini menargetkan 1.5.1; pengujian versi kamera lama memakai suite dari commit versi tersebut, sebagaimana dicatat pada dokumentasi arsip. Tes `gui_ffi_spec.lua` menambahkan konversi argumen pointer C nyata untuk regresi panel 1.5.0.
 
 Sebelum publikasi, periksa checksum semua manifest, kesamaan byte Lua/INI sebelum dan setelah pemindahan, tautan Markdown, build/check dan suite yang relevan. Stage hanya paket rilis, perpindahan dokumentasi, `.gitattributes`, tools serta perubahan path fixture yang diperlukan. Hindari men-stage source lokal atau JSONL. Verifikasi lagi melalui clone bersih sebelum push branch `dev`.
 
-Verifikasi penataan: build/check 1.5.0 lulus, checksum enam versi cocok, seluruh Lua/INI yang dipindahkan identik byte-nya, 24 file source/LICENSE yang dilindungi tidak berubah, dan 49 tautan Markdown lokal valid. Suite source dan bundle lulus di LuaJIT 2.0, LuaJIT 2.1 dan Lua 5.1: 76 kelompok untuk versi terbaru serta 41 kelompok simulator 1.0.0 (702 kelulusan kelompok; nol gagal). Tes I/O Windows juga lulus pada source/bundle di kedua LuaJIT.
+Verifikasi penataan awal (1.0.0–1.5.0): build/check 1.5.0 lulus, checksum enam versi cocok, seluruh Lua/INI yang dipindahkan identik byte-nya, 24 file source/LICENSE yang dilindungi tidak berubah, dan 49 tautan Markdown lokal valid. Suite source dan bundle lulus di LuaJIT 2.0, LuaJIT 2.1 dan Lua 5.1: 76 kelompok untuk versi terbaru saat itu serta 41 kelompok simulator 1.0.0 (702 kelulusan kelompok; nol gagal). Tes I/O Windows juga lulus pada source/bundle di kedua LuaJIT. Regresi batas FFI yang ditemukan kemudian dan perbaikan 1.5.1 dicatat pada dokumentasi patch.
 
 Penataan ini tidak memerlukan pengujian game baru untuk perubahan perilaku karena byte script tetap identik. Batas pengujian rendering/input GTA/SA-MP tetap mengikuti laporan versi masing-masing; kelulusan build dan fixture tidak membuktikan native game berjalan.
