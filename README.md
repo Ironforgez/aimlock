@@ -1,60 +1,55 @@
-# AimLock 1.0.0
+# AimLock 1.1.0
 
-Simulator Weighted Random untuk distribusi bagian tubuh. Semua hasil dibuat dari percobaan lokal yang dijalankan pengguna. Tidak ada pembacaan tembakan, hit detection, packet SA-MP, pengaturan aim, atau perubahan pemain lain.
+Penguncian arah kamera ke pemain SA-MP yang terlihat dekat crosshair, dengan toggle **Ctrl + X**. Status awal **OFF**. Setelah ON, tahan **klik kanan** untuk mempertahankan target; lepas klik kanan untuk melepas target.
 
-| Body part | Target INI distribusi |
-| --- | ---: |
-| Torso | 20% |
-| Left Arm | 20% |
-| Right Arm | 20% |
-| Left Leg | 15% |
-| Right Leg | 15% |
-| Head | 10% |
-| **Total** | **100%** |
+Versi 1.1.0 mengendalikan kamera melalui API game. Versi [1.0.0](docs/AimLock-simulator-1.0.0.md) tetap tersedia sebagai arsip simulator distribusi hit.
 
 ## Instalasi
 
-1. Siapkan GTA San Andreas untuk Windows, SA-MP, MoonLoader dengan LuaJIT/Lua 5.1, dan SAMPFUNCS yang sesuai dengan instalasi game. Modul command menggunakan opcode SA-MP dari SAMPFUNCS.
-2. Unduh [AimLock1.0.0.lua](moonloader/AimLock1.0.0.lua) dan salin ke `<GTA SA>/moonloader/`.
-3. Salin [AimLock.ini](moonloader/config/AimLock.ini) ke `<GTA SA>/moonloader/config/AimLock.ini`. Buat folder `config` jika belum ada.
-4. Jalankan game dan tunggu SA-MP siap. Pesan `[HitDist] Simulator siap` menunjukkan registrasi command berhasil.
+Siapkan GTA San Andreas Windows, SA-MP, MoonLoader, dan SAMPFUNCS yang kompatibel. Salin dua file ini:
 
-Pasang satu salinan script. Jika sebelumnya memasang `AimLock.lua` atau `ArfieHitDistribution.lua`, pindahkan salinan lama keluar dari folder MoonLoader sebelum memasang versi distribusi. Enam modul sudah dibundel ke `AimLock1.0.0.lua`, sehingga folder `lib/AimLockDistribution` tidak perlu dibagikan. Tidak diperlukan SAMP.Lua, ImGui, `inicfg`, atau library eksternal untuk menjalankan simulator.
+```text
+GTA San Andreas/
+  moonloader/
+    AimLock1.1.0.lua
+    config/
+      AimLock1.1.0.ini
+```
+
+- [Unduh AimLock1.1.0.lua](moonloader/AimLock1.1.0.lua)
+- [Unduh AimLock1.1.0.ini](moonloader/config/AimLock1.1.0.ini)
+- [Manifest SHA256](moonloader/AimLock1.1.0.manifest.json)
+
+Pasang hanya satu versi script. Pindahkan source `AimLock.lua`, simulator `AimLock1.0.0.lua`, atau salinan lain keluar dari folder MoonLoader jika memasang versi distribusi ini. Folder `lib/AimLockDistribution` tidak diperlukan untuk versi obfuscated; empat modul sudah dibundel. File JSON adalah metadata build dan tidak perlu dipasang.
 
 ## Penggunaan
 
-```text
-/hitdist
-/hitdist stats
-/hitdist reset
-/hitdist simulate 100
-/hitdist simulate 500
-/hitdist simulate 1000
-```
+1. Masuk SA-MP dan spawn. Pesan startup menampilkan status OFF.
+2. Tekan dan lepas **Ctrl + X**. Chat lokal menampilkan `[AimLock] ON`.
+3. Dengan senjata ID 22..32 dan karakter berjalan kaki, tahan klik kanan dan arahkan crosshair dekat pemain yang terlihat.
+4. Kamera mengikuti target selama masih memenuhi batas jarak, area crosshair, dan garis pandang.
+5. Lepas klik kanan untuk melepas target. Tekan **Ctrl + X** lagi untuk OFF.
 
-Command tanpa argumen menampilkan target dan seed sesi. `simulate` menampilkan tabel batch terakhir berisi jumlah, target, persentase aktual, dan selisih dalam percentage points. `stats` menampilkan akumulasi sesi. `reset` menghapus statistik tanpa mengulang seed. Hasil hanya tampil di chat lokal; riwayat bisa dilihat dengan scroll chat.
+Menahan Ctrl + X tidak menyebabkan toggle berulang. Chat, dialog, console SAMPFUNCS, pause, kehilangan fokus, belum spawn, dan putus koneksi menghentikan penulisan kamera. Keybind diabaikan saat UI tersebut aktif. Script tidak menembak otomatis atau memodifikasi packet/damage. Command `/hitdist` hanya tersedia pada versi simulator lama.
 
-Ubah probabilitas di INI, pertahankan total 100%, lalu reload script atau mulai ulang game. Nama command dapat diganti melalui `general.command` jika `/hitdist` sudah dipakai. Konfigurasi yang hilang atau tidak valid menghentikan startup dan dicatat di `moonloader.log`, tanpa menimpa file pengguna.
+## Konfigurasi
 
-## File distribusi dan dokumentasi
+Edit `moonloader/config/AimLock1.1.0.ini`, lalu reload script atau mulai ulang game. `max_distance` adalah jarak dunia game, `fov_radius` adalah fraksi tinggi layar untuk radius pemilihan, dan `target_height` adalah offset vertikal dari koordinat ped. Nilai `crosshair_x/y` dapat disesuaikan dengan posisi crosshair HUD pengguna.
 
-- [AimLock1.0.0.lua yang sudah diobfuscate](moonloader/AimLock1.0.0.lua)
-- [Manifest SHA256 artefak dan source](moonloader/AimLock1.0.0.manifest.json)
-- [Konfigurasi yang dapat diedit](moonloader/config/AimLock.ini)
-- [Arsitektur, konfigurasi, algoritma, dan SOP distribusi](docs/AimLock.md)
-- [Suite pengujian](tests/hit_distribution_spec.lua)
-- [Alat build](tools/build-release.cjs)
+Titik target memakai offset posisi ped, bukan bone tracking. Senjata scope/ID 33 ke atas dan drive-by belum didukung. Akurasi dengan mod HUD, animasi, skin, dan aspek layar pengguna perlu diuji dalam game.
 
-Source pengembangan `moonloader/AimLock.lua` dan `moonloader/lib/AimLockDistribution/` dipertahankan lokal dan diabaikan Git. File publik memakai bundling, minifikasi, penggantian nama variabel lokal, dan escape numerik pada string. Obfuscation mempersulit pembacaan, tetapi tidak menjamin kode tidak dapat dipulihkan. Petunjuk build ulang tersedia pada dokumentasi; source lokal diperlukan untuk build.
+## Pengembangan dan verifikasi
 
-## Pengujian
-
-Dari root repository, gunakan interpreter Lua 5.1 atau LuaJIT:
+Source `moonloader/AimLock.lua`, `moonloader/lib/AimLockDistribution/`, dan arsip source lokal diabaikan Git. Repository memuat versi distribusi obfuscated beserta konfigurasi, manifest, tes, dan dokumentasi. Obfuscation mempersulit pembacaan dan tidak menjamin kode tidak dapat dipulihkan.
 
 ```powershell
-luajit tests/hit_distribution_spec.lua moonloader/AimLock1.0.0.lua
-# Alternatif jika executable Lua 5.1 bernama lua:
-lua tests/hit_distribution_spec.lua moonloader/AimLock1.0.0.lua
+# Tes bundle; tidak memerlukan source lokal:
+luajit tests/aimlock_spec.lua moonloader/AimLock1.1.0.lua
+
+# Build ulang; memerlukan source lokal:
+npm.cmd ci --prefix tools --ignore-scripts --no-audit --no-fund
+npm.cmd run build --prefix tools
+npm.cmd run check --prefix tools
 ```
 
-Suite tidak membutuhkan source pengembangan, game, atau framework tes. Core dari bundle dijalankan langsung; fungsi MoonLoader diganti stub untuk menguji command dan startup. Bukti pengujian dan pemeriksaan manual di game dijelaskan di [dokumentasi](docs/AimLock.md#pengujian-dan-batas-verifikasi).
+[Dokumentasi arsitektur dan SOP](docs/AimLock.md) menjelaskan implementasi, batas pengujian, dan referensi API. [Suite pengujian](tests/aimlock_spec.lua) menggunakan stub MoonLoader. Pengujian langsung di GTA/SA-MP belum dijalankan.

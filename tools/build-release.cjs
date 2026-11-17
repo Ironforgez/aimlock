@@ -6,7 +6,7 @@ const luaparse = require('luaparse');
 
 const root = path.resolve(__dirname, '..');
 const checkOnly = process.argv.includes('--check');
-const modules = ['config', 'random', 'engine', 'statistics', 'simulation', 'integration'];
+const modules = ['settings', 'camera', 'controller', 'world'];
 const entryPath = 'moonloader/AimLock.lua';
 const sourcePaths = [entryPath, ...modules.map(name =>
   `moonloader/lib/AimLockDistribution/${name}.lua`)];
@@ -21,6 +21,7 @@ function build() {
   const versionMatch = entry.match(/^script_version\(['"](\d+\.\d+\.\d+)['"]\)/m);
   if (!versionMatch) throw new Error('Source must declare a numeric script_version.');
   const version = versionMatch[1];
+  const configurationPath = `moonloader/config/AimLock${version}.ini`;
   const sourceManifest = sources.map(({ path: sourcePath, sha256: hash }) => ({ path: sourcePath, sha256: hash }));
   const sourceSetHash = sha256(JSON.stringify(sourceManifest));
 
@@ -80,7 +81,7 @@ end
   const artifactPath = `moonloader/AimLock${version}.lua`;
   const header = `-- AimLock ${version} | bundled and obfuscated Lua 5.1\n`
     + `-- Source-set SHA256: ${sourceSetHash}\n`
-    + '-- Install one copy only; config/AimLock.ini is required.\n';
+    + `-- Install one copy only; config/AimLock${version}.ini is required.\n`;
   const artifact = header + obfuscated + '\n';
   const manifest = {
     version,
@@ -89,8 +90,8 @@ end
     source_set_sha256: sourceSetHash,
     sources: sourceManifest,
     configuration: {
-      path: 'moonloader/config/AimLock.ini',
-      sha256: sha256(fs.readFileSync(path.join(root, 'moonloader/config/AimLock.ini')))
+      path: configurationPath,
+      sha256: sha256(fs.readFileSync(path.join(root, configurationPath)))
     },
     modules: modules.length,
     encoded_strings: encodedStrings,

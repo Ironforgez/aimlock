@@ -1,0 +1,39 @@
+{
+  "version": "1.1.0",
+  "artifact": "moonloader/AimLock1.1.0.lua",
+  "artifact_sha256": "c4841c42326e6a9e9e24be544edc20c06cbfabfeba6c24e9762340ab6c8540f4",
+  "source_set_sha256": "21fe98d3f465836ff2e8a6a1775575974e8d527516fd9d8976c17e39f27a2b02",
+  "sources": [
+    {
+      "path": "moonloader/AimLock.lua",
+      "sha256": "6d613c4d28dfff359871154130d7b2545e9929ceca3f625ec5d7e5781318bcb3"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/settings.lua",
+      "sha256": "2c30126a05ffc6a37a9bb07927bd326bbfc597a05988a4ccd280a058953e58dd"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/camera.lua",
+      "sha256": "08f81ed72aa803d5ba719150540ac98526b27793ef6d05730543140a7f6a0a63"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/controller.lua",
+      "sha256": "20f8798a849cc213085d4915f4c4fa7be97cbfb624c6a70532a5b1eee5c43fb3"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/world.lua",
+      "sha256": "57a74acd8fde169249031206fa6e4dd68e774a058d6d707d70c73c116ae62f5a"
+    }
+  ],
+  "configuration": {
+    "path": "moonloader/config/AimLock1.1.0.ini",
+    "sha256": "270ead93f8955e6cd00367cf68776f1bb5e47844575b9e413dbe6392c0acc90f"
+  },
+  "modules": 4,
+  "encoded_strings": 93,
+  "tools": {
+    "luamin": "1.0.4",
+    "luaparse": "0.3.1"
+  },
+  "method": "Private module bundle, local identifier renaming, minification, decimal string escapes"
+}

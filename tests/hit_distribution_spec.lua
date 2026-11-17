@@ -1,7 +1,7 @@
 package.path = './moonloader/lib/?.lua;./moonloader/lib/?/init.lua;' .. package.path
 
 local release_path = arg and arg[1]
-local entrypoint_path = release_path or './moonloader/AimLock.lua'
+local entrypoint_path = release_path or './moonloader/archive/AimLock1.0.0.source.lua'
 local load_module = require
 if release_path then
     local env = setmetatable({}, { __index = _G })
