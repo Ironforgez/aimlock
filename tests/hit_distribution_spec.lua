@@ -218,7 +218,7 @@ test('command and seed validation reject invalid settings', function()
 end)
 
 test('configuration loads the shipped INI and reports missing files', function()
-    local config = assert(Config.load('./moonloader/config/AimLock.ini'))
+    local config = assert(Config.load('./releases/1.0.0/config/AimLock.ini'))
     local expected = { 20, 20, 20, 15, 15, 10 }
     for index, key in ipairs(keys) do
         equal(config.distribution[key], expected[index])
@@ -599,7 +599,7 @@ local function entrypoint_fixture()
         return true
     end
     env.sampAddChatMessage = function(text) fixture.messages[#fixture.messages + 1] = text end
-    env.getWorkingDirectory = function() return './moonloader' end
+    env.getWorkingDirectory = function() return './releases/1.0.0' end
     env.wait = function(milliseconds)
         fixture.waits[#fixture.waits + 1] = milliseconds
         assert(#fixture.waits < 20, 'Unexpected infinite readiness loop')

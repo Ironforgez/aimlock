@@ -1,6 +1,6 @@
 # AimLock 1.1.0
 
-Dokumentasi arsip versi kamera dengan titik tetap. Source dan alat build aktif sekarang menghasilkan [versi random aim 1.2.0](AimLock-random-aim-1.2.0.md). Hasil pengujian 1.1.0 di bawah adalah catatan saat versi tersebut dibuat; untuk mereproduksinya gunakan suite pada commit `a6f936d`. Suite `tests/aimlock_spec.lua` saat ini menguji versi terbaru.
+Dokumentasi arsip versi kamera dengan titik tetap. Paket versi ini berada di `releases/1.1.0/`. Versi [1.2.0](../1.2.0/README.md) menambahkan random aim; versi aktif adalah [1.5.0](../1.5.0/README.md). Hasil pengujian 1.1.0 di bawah adalah catatan saat versi tersebut dibuat; untuk mereproduksinya gunakan suite pada commit `a6f936d`. Suite `tests/aimlock_spec.lua` saat ini menguji versi terbaru. [Panduan struktur repository](../../docs/release-structure.md).
 
 ## Perilaku yang diimplementasikan
 
@@ -8,21 +8,21 @@ AimLock 1.1.0 mengubah sudut kamera agar crosshair mengikuti pemain SA-MP yang m
 
 Target dipilih dari karakter yang sedang di-stream ke client, dipetakan ke ID pemain SA-MP, dan diperiksa ulang setiap frame. Karakter sendiri, NPC biasa maupun NPC SA-MP, karakter hilang/mati, pemain di luar jarak/FOV, dan pemain di balik penghalang ditolak. Target yang masih valid dipertahankan; jika hilang, pencarian dapat memilih target valid lainnya saat tombol bidik masih ditahan.
 
-Tidak ada penembakan otomatis, pengubahan damage, atau hook packet/RPC. Output status hanya memakai chat lokal. Versi [1.0.0](AimLock-simulator-1.0.0.md) adalah simulator terpisah dan tetap tersedia sebagai arsip.
+Tidak ada penembakan otomatis, pengubahan damage, atau hook packet/RPC. Output status hanya memakai chat lokal. Versi [1.0.0](../1.0.0/README.md) adalah simulator terpisah dan tetap tersedia sebagai arsip.
 
 ## Struktur
 
 ```text
-moonloader/
+releases/1.1.0/
   AimLock1.1.0.lua                   bundle obfuscated publik
   AimLock1.1.0.manifest.json         hash artefak, source, dan konfigurasi
-  AimLock1.0.0.lua                   arsip simulator publik
-  AimLock.lua                       source 1.1.0 lokal, diabaikan Git
-  archive/AimLock1.0.0.source.lua    arsip source lokal, diabaikan Git
+  README.md                        dokumentasi versi ini
   config/
     AimLock1.1.0.ini                konfigurasi kamera
-    AimLock.ini                    konfigurasi arsip simulator
-  lib/AimLockDistribution/          source lokal, diabaikan Git
+moonloader/
+  AimLock.lua                       source pengembangan aktif
+  archive/AimLock1.0.0.source.lua    arsip source lokal, diabaikan Git
+  lib/AimLockDistribution/          source pengembangan aktif
     settings.lua                   validasi dan parser konfigurasi kamera
     camera.lua                     perhitungan sudut dan kompensasi crosshair
     controller.lua                 state ON/OFF, chord keyboard, lifecycle target
@@ -58,7 +58,7 @@ API yang digunakan mencakup `isKeyDown`, status UI/fokus/spawn, `getAllChars`, p
 
 ## Konfigurasi
 
-File [AimLock1.1.0.ini](../moonloader/config/AimLock1.1.0.ini) memakai schema tersendiri agar konfigurasi simulator lama tidak diubah.
+File [AimLock1.1.0.ini](config/AimLock1.1.0.ini) memakai schema tersendiri agar konfigurasi simulator lama tidak diubah.
 
 | Key | Default | Rentang/arti |
 | --- | --- | --- |
@@ -85,7 +85,7 @@ npm.cmd run build --prefix tools
 npm.cmd run check --prefix tools
 ```
 
-Versi diambil dari metadata source dan nama INI mengikuti versi tersebut. Bundle mempertahankan hook global `main`, metadata author, dan empat modul di dalam closure terpisah, lalu memendekkan identifier lokal serta meng-encode string desimal. Hasil berupa teks Lua 5.1 tanpa loadstring, bytecode, atau download runtime. [Manifest](../moonloader/AimLock1.1.0.manifest.json) dan header mencatat hash source; manifest juga mencatat SHA256 hasil dan INI.
+Versi diambil dari metadata source dan nama INI mengikuti versi tersebut. Bundle mempertahankan hook global `main`, metadata author, dan empat modul di dalam closure terpisah, lalu memendekkan identifier lokal serta meng-encode string desimal. Hasil berupa teks Lua 5.1 tanpa loadstring, bytecode, atau download runtime. [Manifest](AimLock1.1.0.manifest.json) dan header mencatat hash source; manifest juga mencatat SHA256 hasil dan INI.
 
 File asli, folder modul, dan arsip source masuk .gitignore. Stage hanya artefak obfuscated, manifest, INI, tes, alat build, dan dokumentasi. Verifikasi daftar staged sebelum commit/push. .gitattributes mempertahankan byte artefak dan INI. Simpan artefak simulator lama sebagai arsip, tetapi jangan memasang dua versi script sekaligus.
 
@@ -93,11 +93,11 @@ File asli, folder modul, dan arsip source masuk .gitignore. Stage hanya artefak 
 
 ```powershell
 # Bundle tanpa source lokal:
-luajit tests/aimlock_spec.lua moonloader/AimLock1.1.0.lua
+luajit tests/aimlock_spec.lua releases/1.1.0/AimLock1.1.0.lua
 # Source lokal:
 luajit tests/aimlock_spec.lua
 # Regresi simulator arsip:
-luajit tests/hit_distribution_spec.lua moonloader/AimLock1.0.0.lua
+luajit tests/hit_distribution_spec.lua releases/1.0.0/AimLock1.0.0.lua
 ```
 
 Suite kamera menguji validasi INI, arah radian, kompensasi crosshair, pembatas pitch, debounce Ctrl + X, larangan toggle saat UI aktif, lifecycle target, pemilihan pemain, filter NPC/mati/jarak/FOV/halangan, pemanggilan API kamera, dan lifecycle main menggunakan coroutine/stub. Suite bundle memblokir require eksternal.

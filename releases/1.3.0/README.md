@@ -1,6 +1,8 @@
 # AimLock 1.3.0: Shot Telemetry
 
-Dokumen ini merekam versi 1.3.0. Versi terbaru [1.4.0](AimLock-GUI-1.4.0.md) menambahkan GUI konfigurasi/log, live apply, save INI dengan backup dan manager telemetry yang memakai ulang observer. Nama sesi terbaru menambahkan nomor urut. Schema laporan dan batas interpretasi di bawah tetap relevan; instalasi terbaru mengikuti dokumen 1.4.0.
+Paket repository berada di `releases/1.3.0/`. Salin Lua paket ke `moonloader/` game dan INI paket ke `moonloader/config/` game. [Panduan struktur repository](../../docs/release-structure.md).
+
+Dokumen ini merekam versi 1.3.0. Versi terbaru [1.4.0](../1.4.0/README.md) menambahkan GUI konfigurasi/log, live apply, save INI dengan backup dan manager telemetry yang memakai ulang observer. Nama sesi terbaru menambahkan nomor urut. Schema laporan dan batas interpretasi di bawah tetap relevan; instalasi terbaru mengikuti dokumen 1.4.0.
 
 ## Arsitektur tiga modul
 
@@ -10,7 +12,7 @@ Dokumen ini merekam versi 1.3.0. Versi terbaru [1.4.0](AimLock-GUI-1.4.0.md) men
 | Aim Point Distribution | config.lua, random.lua, engine.lua, aim_point.lua | Memilih area tubuh berbobot dan mempertahankan pilihan selama interval |
 | Shot Telemetry | telemetry.lua, telemetry_observer.lua, telemetry_journal.lua, telemetry_runtime.lua | Mengamati laporan tembakan/damage dan menyimpan bukti beserta snapshot aim |
 
-`settings.lua` memvalidasi konfigurasi ketiga lapisan. Source aktif tetap `moonloader/AimLock.lua` dengan namespace `AimLockDistribution`. File distribusi [AimLock1.3.0.lua](../moonloader/AimLock1.3.0.lua) membundel dua belas modul. Source pengembangan disimpan lokal dan tidak disertakan dalam publikasi.
+`settings.lua` memvalidasi konfigurasi ketiga lapisan. Source aktif tetap `moonloader/AimLock.lua` dengan namespace `AimLockDistribution`. File distribusi [AimLock1.3.0.lua](AimLock1.3.0.lua) membundel dua belas modul. Source pengembangan disimpan lokal dan tidak disertakan dalam publikasi.
 
 ```mermaid
 flowchart LR
@@ -22,11 +24,11 @@ flowchart LR
     Telemetry --> Journal[Batch JSONL di loop utama]
 ```
 
-Telemetry tidak memanggil engine random, memilih target, mengubah sudut kamera, menulis payload, atau mengirim tembakan. Aktivitas kamera tetap berasal dari dua modul yang sudah ada pada [versi 1.2.0](AimLock-random-aim-1.2.0.md). Ctrl + X mengendalikan aim tracking; telemetry mempunyai pengaturan aktif sendiri sehingga data tembakan saat aim OFF tetap dapat dicatat sebagai pembanding.
+Telemetry tidak memanggil engine random, memilih target, mengubah sudut kamera, menulis payload, atau mengirim tembakan. Aktivitas kamera tetap berasal dari dua modul yang sudah ada pada [versi 1.2.0](../1.2.0/README.md). Ctrl + X mengendalikan aim tracking; telemetry mempunyai pengaturan aktif sendiri sehingga data tembakan saat aim OFF tetap dapat dicatat sebagai pembanding.
 
 ## Instalasi dan konfigurasi
 
-Salin [AimLock1.3.0.lua](../moonloader/AimLock1.3.0.lua) ke `moonloader/` dan [AimLock1.3.0.ini](../moonloader/config/AimLock1.3.0.ini) ke `moonloader/config/`. Pasang satu versi script. Tidak perlu memasang folder lib atau manifest JSON. JSONL dibuat otomatis saat runtime di:
+Salin [AimLock1.3.0.lua](AimLock1.3.0.lua) ke `moonloader/` dan [AimLock1.3.0.ini](config/AimLock1.3.0.ini) ke `moonloader/config/`. Pasang satu versi script. Tidak perlu memasang folder lib atau manifest JSON. JSONL dibuat otomatis saat runtime di:
 
 ```text
 moonloader/logs/AimLock1.3.0-YYYYMMDD-HHMMSS-<game_ms>.jsonl
@@ -124,11 +126,11 @@ Target tetap GTA SA Windows, SA-MP, MoonLoader LuaJIT/Lua 5.1, dan SAMPFUNCS. Te
 npm.cmd ci --prefix tools --ignore-scripts --no-audit --no-fund
 npm.cmd run build --prefix tools
 npm.cmd run check --prefix tools
-luajit tests/aimlock_spec.lua moonloader/AimLock1.3.0.lua
-luajit tests/shot_telemetry_spec.lua moonloader/AimLock1.3.0.lua
+luajit tests/aimlock_spec.lua releases/1.3.0/AimLock1.3.0.lua
+luajit tests/shot_telemetry_spec.lua releases/1.3.0/AimLock1.3.0.lua
 ```
 
-Untuk source lokal, hilangkan argumen file bundle pada perintah tes. Registry modul privat tidak memerlukan folder source pada instalasi publik. Build mempertahankan hook main dan onExitScript, author, minifikasi/renaming lokal, serta escape numerik string. [Manifest](../moonloader/AimLock1.3.0.manifest.json) mencatat hash source, artefak, dan INI. Obfuscation mempersulit pembacaan dan tidak menjamin source tidak dapat dipulihkan.
+Untuk source lokal, hilangkan argumen file bundle pada perintah tes. Registry modul privat tidak memerlukan folder source pada instalasi publik. Build mempertahankan hook main dan onExitScript, author, minifikasi/renaming lokal, serta escape numerik string. [Manifest](AimLock1.3.0.manifest.json) mencatat hash source, artefak, dan INI. Obfuscation mempersulit pembacaan dan tidak menjamin source tidak dapat dipulihkan.
 
 Publikasi memilih file obfuscated, manifest, INI, dokumentasi, tes, alat build, dan aturan ignore log secara eksplisit. Jangan memasukkan source pengembangan atau data log runtime ke commit distribusi. Periksa daftar staged dan hash artefak sebelum push. Pengaturan ignore lokal pengguna yang sudah berubah tidak diubah oleh modul runtime.
 

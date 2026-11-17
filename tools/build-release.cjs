@@ -23,7 +23,8 @@ function build() {
   const versionMatch = entry.match(/^script_version\(['"](\d+\.\d+\.\d+)['"]\)/m);
   if (!versionMatch) throw new Error('Source must declare a numeric script_version.');
   const version = versionMatch[1];
-  const configurationPath = `moonloader/config/AimLock${version}.ini`;
+  const releaseDirectory = `releases/${version}`;
+  const configurationPath = `${releaseDirectory}/config/AimLock${version}.ini`;
   const sourceManifest = sources.map(({ path: sourcePath, sha256: hash }) => ({ path: sourcePath, sha256: hash }));
   const sourceSetHash = sha256(JSON.stringify(sourceManifest));
 
@@ -83,7 +84,7 @@ end
     throw new Error('MoonLoader onExitScript cleanup hook was lost.');
   }
 
-  const artifactPath = `moonloader/AimLock${version}.lua`;
+  const artifactPath = `${releaseDirectory}/AimLock${version}.lua`;
   const header = `-- AimLock ${version} | bundled and obfuscated Lua 5.1\n`
     + `-- Source-set SHA256: ${sourceSetHash}\n`
     + `-- Install one copy only; config/AimLock${version}.ini is required.\n`;
@@ -105,7 +106,7 @@ end
   };
   const outputs = [
     [artifactPath, artifact],
-    [`moonloader/AimLock${version}.manifest.json`, JSON.stringify(manifest, null, 2) + '\n']
+    [`${releaseDirectory}/AimLock${version}.manifest.json`, JSON.stringify(manifest, null, 2) + '\n']
   ];
   for (const [outputPath, content] of outputs) {
     const absolutePath = path.join(root, outputPath);
@@ -114,6 +115,7 @@ end
         throw new Error(`${outputPath} is stale; rebuild before publishing.`);
       }
     } else {
+      fs.mkdirSync(path.dirname(absolutePath), { recursive: true });
       fs.writeFileSync(absolutePath, content, 'utf8');
     }
   }

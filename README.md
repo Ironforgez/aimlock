@@ -4,11 +4,33 @@ Penguncian arah kamera ke pemain SA-MP yang terlihat dekat crosshair, dengan **r
 
 Versi 1.5.0 menyederhanakan GUI menjadi dua menu, **Pengaturan** dan **Log**, melalui **`/apanel`**. Opsi lanjutan dilipat, author **IronForgez | Arvin_Inc** tampil di kanan atas, dan chat memakai prefix `[IronForgez | Arvin_Inc]`. Nama AimLock dipertahankan untuk identitas file/script dan data internal; tampilan panel/chat memakai identitas author. Ctrl + X dan dua command lama sudah diganti.
 
-Versi [1.4.0](docs/AimLock-GUI-1.4.0.md) memperkenalkan GUI. Versi [1.3.0](docs/AimLock-shot-telemetry-1.3.0.md) memperkenalkan telemetry. Versi [1.1.0](docs/AimLock.md) memakai satu titik tetap. Versi [1.2.0](docs/AimLock-random-aim-1.2.0.md) menghubungkan engine Weighted Random lama dengan penguncian kamera. Versi [1.0.0](docs/AimLock-simulator-1.0.0.md) tetap merupakan arsip simulator distribusi hit.
+Versi [1.4.0](releases/1.4.0/README.md) memperkenalkan GUI. Versi [1.3.0](releases/1.3.0/README.md) memperkenalkan telemetry. Versi [1.1.0](releases/1.1.0/README.md) memakai satu titik tetap. Versi [1.2.0](releases/1.2.0/README.md) menghubungkan engine Weighted Random lama dengan penguncian kamera. Versi [1.0.0](releases/1.0.0/README.md) tetap merupakan arsip simulator distribusi hit.
+
+## Struktur rilis
+
+```text
+releases/
+  1.0.0/
+  1.1.0/
+  1.2.0/
+  1.3.0/
+  1.4.0/
+  1.5.0/
+    AimLock1.5.0.lua
+    AimLock1.5.0.manifest.json
+    README.md
+    config/
+      AimLock1.5.0.ini
+moonloader/
+  AimLock.lua                    source pengembangan lokal
+  lib/AimLockDistribution/        modul pengembangan lokal
+```
+
+Setiap folder versi berisi script obfuscated, manifest, dokumentasi dan konfigurasi yang sesuai. Versi 1.0.0 memakai nama konfigurasi lama `config/AimLock.ini`. Source terbaru tetap lokal; snapshot source lama yang sudah ada di Git dipertahankan. [Panduan struktur, build dan publikasi](docs/release-structure.md).
 
 ## Instalasi
 
-Siapkan GTA San Andreas Windows, SA-MP, MoonLoader, dan SAMPFUNCS yang kompatibel. Salin dua file ini:
+Siapkan GTA San Andreas Windows, SA-MP, MoonLoader, dan SAMPFUNCS yang kompatibel. Pilih satu folder versi di `releases/`. Untuk 1.5.0, salin `releases/1.5.0/AimLock1.5.0.lua` ke `moonloader/` game dan `releases/1.5.0/config/AimLock1.5.0.ini` ke `moonloader/config/` game:
 
 ```text
 GTA San Andreas/
@@ -20,9 +42,9 @@ GTA San Andreas/
       mimgui/          # dependensi GUI, dari ZIP resmi
 ```
 
-- [Unduh AimLock1.5.0.lua](moonloader/AimLock1.5.0.lua)
-- [Unduh AimLock1.5.0.ini](moonloader/config/AimLock1.5.0.ini)
-- [Manifest SHA256](moonloader/AimLock1.5.0.manifest.json)
+- [Unduh AimLock1.5.0.lua](releases/1.5.0/AimLock1.5.0.lua)
+- [Unduh AimLock1.5.0.ini](releases/1.5.0/config/AimLock1.5.0.ini)
+- [Manifest SHA256](releases/1.5.0/AimLock1.5.0.manifest.json)
 - [mimgui v1.7.1 resmi](https://github.com/THE-FYP/mimgui/releases/download/v1.7.1/mimgui-v1.7.1.zip): ekstrak folder `mimgui` ke `moonloader/lib/`, termasuk DLL dan semua file Lua di dalamnya.
 
 Pasang hanya satu versi script. Pindahkan source `AimLock.lua` dan versi distribusi lama keluar dari folder MoonLoader jika memasang versi ini. Folder `lib/AimLockDistribution` tidak diperlukan untuk versi obfuscated; delapan belas modul sudah dibundel. Folder `lib/mimgui` diperlukan untuk GUI. Jika mimgui atau API GUI tidak tersedia, script tetap menggunakan INI dan Alt + X, dengan alasan kegagalan di `moonloader.log`. File JSON manifest adalah metadata build dan tidak perlu dipasang. `ffi` sudah merupakan bagian LuaJIT; jangan memasang file ffi dari sumber lain.
@@ -98,10 +120,10 @@ Update 1.5.0 mempublikasikan bundle obfuscated, konfigurasi, manifest, tes dan d
 
 ```powershell
 # Tes bundle; tidak memerlukan source lokal:
-luajit tests/aimlock_spec.lua moonloader/AimLock1.5.0.lua
-luajit tests/shot_telemetry_spec.lua moonloader/AimLock1.5.0.lua
-luajit tests/gui_spec.lua moonloader/AimLock1.5.0.lua
-luajit tests/windows_io_spec.lua moonloader/AimLock1.5.0.lua
+luajit tests/aimlock_spec.lua releases/1.5.0/AimLock1.5.0.lua
+luajit tests/shot_telemetry_spec.lua releases/1.5.0/AimLock1.5.0.lua
+luajit tests/gui_spec.lua releases/1.5.0/AimLock1.5.0.lua
+luajit tests/windows_io_spec.lua releases/1.5.0/AimLock1.5.0.lua
 
 # Build ulang; memerlukan source lokal:
 npm.cmd ci --prefix tools --ignore-scripts --no-audit --no-fund
@@ -109,4 +131,4 @@ npm.cmd run build --prefix tools
 npm.cmd run check --prefix tools
 ```
 
-[Dokumentasi GUI minimal 1.5.0, arsitektur dan SOP](docs/AimLock-GUI-1.5.0.md) menjelaskan perubahan terbaru. [Dokumentasi GUI 1.4.0](docs/AimLock-GUI-1.4.0.md) dan [telemetry 1.3.0](docs/AimLock-shot-telemetry-1.3.0.md) menjadi referensi versi sebelumnya. Tes aim/telemetry/GUI memakai stub MoonLoader dan mimgui; tes Windows I/O memakai kernel32 dan file sementara nyata. Pengujian tampilan serta input langsung di GTA/SA-MP belum dijalankan.
+[Dokumentasi GUI minimal 1.5.0, arsitektur dan SOP](releases/1.5.0/README.md) menjelaskan perubahan terbaru. [Dokumentasi GUI 1.4.0](releases/1.4.0/README.md) dan [telemetry 1.3.0](releases/1.3.0/README.md) menjadi referensi versi sebelumnya. Tes aim/telemetry/GUI memakai stub MoonLoader dan mimgui; tes Windows I/O memakai kernel32 dan file sementara nyata. Pengujian tampilan serta input langsung di GTA/SA-MP belum dijalankan.

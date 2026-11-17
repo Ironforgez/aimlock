@@ -2,3 +2,6 @@
 /moonloader/AimLock*.lua -text
 /moonloader/AimLock*.manifest.json -text
 /moonloader/config/*.ini -text
+/releases/*/AimLock*.lua -text
+/releases/*/AimLock*.manifest.json -text
+/releases/*/config/*.ini -text

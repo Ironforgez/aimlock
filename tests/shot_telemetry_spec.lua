@@ -342,6 +342,7 @@ end)
 
 test('main connects tracking distribution and telemetry and records baseline shots after Alt X OFF',function()
     local native=native_fixture(); local api=native.api; local camera_writes=0; native.keys={}
+    api.getWorkingDirectory=function() return './releases/'..expected_version end
     api.PLAYER_PED=1
     for _,name in ipairs({'isSampLoaded','isSampfuncsLoaded','isSampAvailable','isGameWindowForeground',
         'sampIsLocalPlayerSpawned','doesCharExist','isCharOnFoot','isLineOfSightClear'}) do api[name]=function() return true end end

@@ -1,6 +1,8 @@
 # AimLock 1.2.0: random aim saat lock
 
-Dokumentasi arsip versi 1.2.0. Source dan alat build aktif sekarang menghasilkan [versi Shot Telemetry 1.3.0](AimLock-shot-telemetry-1.3.0.md). Hasil 28 kelompok tes di bawah adalah catatan pengujian versi ini; suite pada branch aktif menguji versi terbaru. Untuk mereproduksi pengujian 1.2.0, gunakan suite pada commit `82a3426`.
+Paket repository berada di `releases/1.2.0/`. Salin Lua paket ke `moonloader/` game dan INI paket ke `moonloader/config/` game. [Panduan struktur repository](../../docs/release-structure.md).
+
+Dokumentasi arsip versi 1.2.0. Source dan alat build aktif sekarang menghasilkan [versi Shot Telemetry 1.3.0](../1.3.0/README.md). Hasil 28 kelompok tes di bawah adalah catatan pengujian versi ini; suite pada branch aktif menguji versi terbaru. Untuk mereproduksi pengujian 1.2.0, gunakan suite pada commit `82a3426`.
 
 ## Perbedaan versi
 
@@ -14,7 +16,7 @@ Versi terbaru menghubungkan engine Weighted Random yang sudah dipakai simulator 
 
 ## Instalasi dan konfigurasi
 
-Pasang [AimLock1.2.0.lua](../moonloader/AimLock1.2.0.lua) di `moonloader/`, serta [AimLock1.2.0.ini](../moonloader/config/AimLock1.2.0.ini) di `moonloader/config/`. Pasang satu versi script. Seluruh modul dibundel pada file obfuscated; folder lib dan JSON manifest tidak diperlukan saat bermain.
+Pasang [AimLock1.2.0.lua](AimLock1.2.0.lua) di `moonloader/`, serta [AimLock1.2.0.ini](config/AimLock1.2.0.ini) di `moonloader/config/`. Pasang satu versi script. Seluruh modul dibundel pada file obfuscated; folder lib dan JSON manifest tidak diperlukan saat bermain.
 
 ```ini
 [aimlock]
@@ -104,12 +106,12 @@ Tidak ada library runtime tambahan. Target tetap Windows, GTA SA, SA-MP, MoonLoa
 npm.cmd ci --prefix tools --ignore-scripts --no-audit --no-fund
 npm.cmd run build --prefix tools
 npm.cmd run check --prefix tools
-luajit tests/aimlock_spec.lua moonloader/AimLock1.2.0.lua
+luajit tests/aimlock_spec.lua releases/1.2.0/AimLock1.2.0.lua
 # Source lokal:
 luajit tests/aimlock_spec.lua
 ```
 
-Build mempertahankan hook main dan metadata author, memakai registry modul privat, lalu memendekkan identifier lokal dan meng-encode string desimal. [Manifest](../moonloader/AimLock1.2.0.manifest.json) menyimpan hash artefak, source, dan INI. Source asli serta node_modules tetap diabaikan Git. Hanya artefak obfuscated, manifest, INI, dokumentasi, tes, dan alat build yang disertakan untuk publikasi. Obfuscation tidak menjamin source tidak dapat dipulihkan.
+Build mempertahankan hook main dan metadata author, memakai registry modul privat, lalu memendekkan identifier lokal dan meng-encode string desimal. [Manifest](AimLock1.2.0.manifest.json) menyimpan hash artefak, source, dan INI. Source asli serta node_modules tetap diabaikan Git. Hanya artefak obfuscated, manifest, INI, dokumentasi, tes, dan alat build yang disertakan untuk publikasi. Obfuscation tidak menjamin source tidak dapat dipulihkan.
 
 Suite menguji validasi konfigurasi/distribusi, batas interval bobot, bobot nol/100%, interval waktu, pergantian ID target, reset dan rollover, perubahan sudut kamera pada pemain yang sama, offset kiri/kanan, retensi saat titik terhalang, toggle/UI/spawn, serta bundle tanpa require eksternal. Pengujian langsung di GTA/SA-MP belum dilakukan; native runtime/stub tidak membuktikan akurasi anggota tubuh pada game terpasang.
 

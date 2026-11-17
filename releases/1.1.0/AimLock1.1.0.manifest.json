@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "artifact": "moonloader/AimLock1.1.0.lua",
+  "artifact": "releases/1.1.0/AimLock1.1.0.lua",
   "artifact_sha256": "c4841c42326e6a9e9e24be544edc20c06cbfabfeba6c24e9762340ab6c8540f4",
   "source_set_sha256": "21fe98d3f465836ff2e8a6a1775575974e8d527516fd9d8976c17e39f27a2b02",
   "sources": [
@@ -26,7 +26,7 @@
     }
   ],
   "configuration": {
-    "path": "moonloader/config/AimLock1.1.0.ini",
+    "path": "releases/1.1.0/config/AimLock1.1.0.ini",
     "sha256": "270ead93f8955e6cd00367cf68776f1bb5e47844575b9e413dbe6392c0acc90f"
   },
   "modules": 4,

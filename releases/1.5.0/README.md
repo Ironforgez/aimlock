@@ -1,5 +1,7 @@
 # AimLock 1.5.0: panel minimal dan identitas author
 
+Paket repository berada di `releases/1.5.0/`, termasuk script, manifest, `config/` dan README ini. [Panduan struktur repository dan SOP build](../../docs/release-structure.md). Lokasi file setelah dipasang dalam game tetap mengikuti prosedur instalasi di bawah.
+
 Versi ini mengganti antarmuka 1.4.0 dengan panel dua menu: Pengaturan dan Log. Command default menjadi `/apanel`, toggle tracking menjadi Alt + X. Identitas pada chat dan kanan atas panel mengikuti metadata author: **IronForgez | Arvin_Inc**. Nama file dan `script_name` tetap AimLock.
 
 ## Tampilan dan interaksi
@@ -33,7 +35,7 @@ Saat GUI terbuka, target dilepas dan penulisan kamera serta toggle Alt + X diblo
 ## Instalasi dan migrasi
 
 1. Pindahkan script versi lama dan source `AimLock.lua` keluar dari folder script aktif. Pasang hanya satu versi.
-2. Salin [AimLock1.5.0.lua](../moonloader/AimLock1.5.0.lua) ke `moonloader/` dan [AimLock1.5.0.ini](../moonloader/config/AimLock1.5.0.ini) ke `moonloader/config/`.
+2. Salin [AimLock1.5.0.lua](AimLock1.5.0.lua) ke `moonloader/` dan [AimLock1.5.0.ini](config/AimLock1.5.0.ini) ke `moonloader/config/`.
 3. Pertahankan mimgui v1.7.1 di `moonloader/lib/mimgui/`, termasuk DLL dan semua file Lua. Tidak ada dependensi baru. [ZIP resmi](https://github.com/THE-FYP/mimgui/releases/download/v1.7.1/mimgui-v1.7.1.zip).
 4. Jika ingin memakai nilai lama, salin pengaturan numerik/distribusi ke INI 1.5.0. Default bobot tetap 20/20/20/15/15/10; validasi total 100%, bobot nonnegatif dan rentang lainnya tidak berubah.
 5. Masuk game, buka `/apanel`, pilih Pengaturan/Log; tutup sebelum memakai Alt + X.
@@ -66,7 +68,7 @@ Bundle berisi 18 modul. Modul baru **identity.lua** menyimpan author, versi sesi
 | gui_model.lua | Draft/apply/save tetap terpisah, pesan status lebih ringkas |
 | telemetry.lua, telemetry_runtime.lua | Versi sesi 1.5.0 dan prefix author melalui identity; format data tidak diubah |
 
-Config, random, engine, aim_point, camera, world, observer, journal dan log_view mempertahankan algoritma/kontrak sebelumnya. Observer tidak menulis packet atau membatalkan event. Save dan baca berkas tetap diproses di loop utama, bukan callback render. Simpan mempertahankan backup dan penggantian file Windows dari [1.4.0](AimLock-GUI-1.4.0.md).
+Config, random, engine, aim_point, camera, world, observer, journal dan log_view mempertahankan algoritma/kontrak sebelumnya. Observer tidak menulis packet atau membatalkan event. Save dan baca berkas tetap diproses di loop utama, bukan callback render. Simpan mempertahankan backup dan penggantian file Windows dari [1.4.0](../1.4.0/README.md).
 
 ## Pengembangan dan publikasi
 
@@ -76,10 +78,10 @@ npm.cmd run build --prefix tools
 npm.cmd run check --prefix tools
 
 # Bisa dijalankan pada clone publik:
-luajit tests/aimlock_spec.lua moonloader/AimLock1.5.0.lua
-luajit tests/shot_telemetry_spec.lua moonloader/AimLock1.5.0.lua
-luajit tests/gui_spec.lua moonloader/AimLock1.5.0.lua
-luajit tests/windows_io_spec.lua moonloader/AimLock1.5.0.lua
+luajit tests/aimlock_spec.lua releases/1.5.0/AimLock1.5.0.lua
+luajit tests/shot_telemetry_spec.lua releases/1.5.0/AimLock1.5.0.lua
+luajit tests/gui_spec.lua releases/1.5.0/AimLock1.5.0.lua
+luajit tests/windows_io_spec.lua releases/1.5.0/AimLock1.5.0.lua
 ```
 
 Update ini mempublikasikan artifact obfuscated, manifest, INI, tes, tools dan dokumentasi melalui allowlist file eksplisit. Perubahan source terbaru disimpan lokal. Snapshot source lama sudah dilacak di Git melalui commit pengguna sebelum update ini; riwayat/file lama itu tidak dihapus atau diperbarui oleh commit publikasi GUI 1.5.0. Snapshot lama tersebut bukan source build 1.5.0. Jangan men-stage source terbaru atau JSONL ketika memperbarui bundle. Obfuscation tidak menjamin kode tidak dapat dipulihkan.

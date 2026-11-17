@@ -50,7 +50,7 @@ end)
 test('INI accepts BOM CRLF comments and shipped configuration', function()
     local settings = assert(Settings.parse('\239\187\191[aimlock]\r\nenabled=false ; off\r\nmax_distance=75\r\n'))
     equal(settings.enabled, false); equal(settings.max_distance, 75)
-    equal(assert(Settings.load('./moonloader/config/AimLock1.3.0.ini')).enabled, false)
+    equal(assert(Settings.load('./releases/1.3.0/config/AimLock1.3.0.ini')).enabled, false)
 end)
 test('INI rejects missing section, duplicates, invalid booleans and damaged lines', function()
     for _, text in ipairs({ '', 'enabled=false', '[bad]', '[aimlock]\nenabled=1',
@@ -178,7 +178,7 @@ local function entry(gui_state)
     env.isSampfuncsLoaded=function() return true end
     env.isSampAvailable=function() return s.ready end
     env.sampAddChatMessage=function(text) s.messages[#s.messages+1]=text end
-    env.getWorkingDirectory=function() return './moonloader' end
+    env.getWorkingDirectory=function() return './releases/'..expected_version end
     env.isKeyDown=function(key) return s.keys[key] or false end
     env.isPauseMenuActive=function() return s.pause or false end
     env.isGameWindowForeground=function() return not s.background end
@@ -243,7 +243,7 @@ local function point_settings(values)
     return assert(Settings.validate(values))
 end
 test('random defaults match legacy INI weights and distribution snapshots are independent', function()
-    local settings=assert(Settings.load('./moonloader/config/AimLock1.3.0.ini'))
+    local settings=assert(Settings.load('./releases/1.3.0/config/AimLock1.3.0.ini'))
     equal(settings.random_aim,true); equal(settings.random_interval_ms,300)
     local expected={torso=20,left_arm=20,right_arm=20,left_leg=15,right_leg=15,head=10}
     for key,value in pairs(expected) do equal(settings.distribution[key],value) end

@@ -1,6 +1,8 @@
 # AimLock 1.4.0: GUI konfigurasi dan log
 
-Arsip versi 1.4.0. Versi terbaru [1.5.0](AimLock-GUI-1.5.0.md) memakai panel minimal dua menu, satu command `/apanel`, Alt + X dan identitas author pada GUI/chat. Prosedur `/aimlock`, `/aimlog` dan Ctrl + X di bawah hanya berlaku untuk 1.4.0. Snapshot source lama kemudian ditambahkan ke repo melalui commit terpisah; kebijakan publikasi update 1.5.0 dijelaskan di dokumen terbaru.
+Paket repository berada di `releases/1.4.0/`. Salin Lua paket ke `moonloader/` game dan INI paket ke `moonloader/config/` game. [Panduan struktur repository](../../docs/release-structure.md).
+
+Arsip versi 1.4.0. Versi terbaru [1.5.0](../1.5.0/README.md) memakai panel minimal dua menu, satu command `/apanel`, Alt + X dan identitas author pada GUI/chat. Prosedur `/aimlock`, `/aimlog` dan Ctrl + X di bawah hanya berlaku untuk 1.4.0. Snapshot source lama kemudian ditambahkan ke repo melalui commit terpisah; kebijakan publikasi update 1.5.0 dijelaskan di dokumen terbaru.
 
 Versi ini menambahkan panel mimgui dengan sidebar Konfigurasi, Distribusi, Telemetry, dan Log. Aim Tracking, Weighted Aim Point Distribution, Ctrl + X, dan pengamatan telemetry pasif dari 1.3.0 tetap tersedia. Tidak ada mekanisme baru yang memaksa hit, mengubah payload, atau menembak otomatis.
 
@@ -13,7 +15,7 @@ Versi ini menambahkan panel mimgui dengan sidebar Konfigurasi, Distribusi, Telem
 | mimgui v1.7.1 | GUI Dear ImGui + DX9; dependensi baru dan opsional untuk keseluruhan script |
 | Node.js, luamin 1.0.4, luaparse 0.3.1 | Tools build obfuscation; hanya pada workstation pengembangan |
 
-Salin `moonloader/AimLock1.4.0.lua` dan `moonloader/config/AimLock1.4.0.ini` ke folder yang sama pada instalasi GTA. Pasang satu versi script. Unduh [ZIP mimgui resmi v1.7.1](https://github.com/THE-FYP/mimgui/releases/download/v1.7.1/mimgui-v1.7.1.zip), ekstrak folder `mimgui` ke `moonloader/lib/mimgui/`. ZIP resmi berisi `init.lua`, `imgui.lua`, `cdefs.lua`, `dx9.lua`, `win32.lua`, dan `cimguidx9.dll`; seluruh isinya diperlukan. ZIP telah diunduh dan struktur tersebut diperiksa saat implementasi.
+Salin `releases/1.4.0/AimLock1.4.0.lua` ke `moonloader/` game dan `releases/1.4.0/config/AimLock1.4.0.ini` ke `moonloader/config/` game. Pasang satu versi script. Unduh [ZIP mimgui resmi v1.7.1](https://github.com/THE-FYP/mimgui/releases/download/v1.7.1/mimgui-v1.7.1.zip), ekstrak folder `mimgui` ke `moonloader/lib/mimgui/`. ZIP resmi berisi `init.lua`, `imgui.lua`, `cdefs.lua`, `dx9.lua`, `win32.lua`, dan `cimguidx9.dll`; seluruh isinya diperlukan. ZIP telah diunduh dan struktur tersebut diperiksa saat implementasi.
 
 Folder source `lib/AimLockDistribution` tidak dibutuhkan oleh bundle. File manifest `.json` berisi checksum distribusi dan tidak dipasang. File `.jsonl` adalah log yang dibuat otomatis di `moonloader/logs/`; jangan meletakkannya di `lib`. Tidak diperlukan `vkeys`, `encoding`, SAMP.Lua, atau paket ffi tambahan.
 
@@ -31,7 +33,7 @@ Panel menahan kontrol pemain melalui `OnFrame().LockPlayer`. Saat game tidak akt
 
 ## Konfigurasi dan penyimpanan
 
-INI lengkap tersedia pada [AimLock1.4.0.ini](../moonloader/config/AimLock1.4.0.ini). Seluruh key 1.3.0 tetap valid. Key baru berada di `[aimlock]`:
+INI lengkap tersedia pada [AimLock1.4.0.ini](config/AimLock1.4.0.ini). Seluruh key 1.3.0 tetap valid. Key baru berada di `[aimlock]`:
 
 ```ini
 gui_enabled=true
@@ -57,7 +59,7 @@ Pembacaan bertahap maksimal 64 KiB per poll; refresh otomatis setiap 500 ms sela
 
 Filter event, ID target tepat, dan pencarian teks literal tanpa membedakan huruf besar/kecil bekerja pada event yang sudah dimuat. **Bersihkan tampilan** mengosongkan event di memori, mempertahankan offset baca, dan tidak memodifikasi file. Pilih ulang file untuk memuat ulang dari awal. Tabel menampilkan timer game, event, target, titik aim pilihan, body part laporan, dan status server. Pilih baris untuk detail JSON asli, termasuk waktu sistem, senjata, koordinat dan kandidat korelasi bila tersedia.
 
-Data adalah laporan keluar dari client; `server_status=unknown` tetap berlaku. Tidak adanya laporan damage tidak diberi label confirmed miss. Kandidat temporal, termasuk kandidat tunggal, bukan konfirmasi server. Schema dan batas korelasi lainnya tetap mengikuti [dokumentasi telemetry 1.3.0](AimLock-shot-telemetry-1.3.0.md).
+Data adalah laporan keluar dari client; `server_status=unknown` tetap berlaku. Tidak adanya laporan damage tidak diberi label confirmed miss. Kandidat temporal, termasuk kandidat tunggal, bukan konfirmasi server. Schema dan batas korelasi lainnya tetap mengikuti [dokumentasi telemetry 1.3.0](../1.3.0/README.md).
 
 ## Struktur dan arsitektur aktual
 
@@ -109,10 +111,10 @@ Gate native UI tetap terbuka; hasil otomatis tidak dinyatakan sebagai kelulusan 
 npm.cmd ci --prefix tools --ignore-scripts --no-audit --no-fund
 npm.cmd run build --prefix tools
 npm.cmd run check --prefix tools
-luajit tests/aimlock_spec.lua moonloader/AimLock1.4.0.lua
-luajit tests/shot_telemetry_spec.lua moonloader/AimLock1.4.0.lua
-luajit tests/gui_spec.lua moonloader/AimLock1.4.0.lua
-luajit tests/windows_io_spec.lua moonloader/AimLock1.4.0.lua
+luajit tests/aimlock_spec.lua releases/1.4.0/AimLock1.4.0.lua
+luajit tests/shot_telemetry_spec.lua releases/1.4.0/AimLock1.4.0.lua
+luajit tests/gui_spec.lua releases/1.4.0/AimLock1.4.0.lua
+luajit tests/windows_io_spec.lua releases/1.4.0/AimLock1.4.0.lua
 ```
 
 Build memerlukan source lokal. Test bundle tidak memerlukan `lib/AimLockDistribution`. Test mimgui memakai `tests/gui_fixture.lua`; library mimgui nyata tidak diperlukan oleh suite stub. Jalankan tes dari root repo. Lua 5.1 dapat menjalankan tiga suite logika; Windows I/O memerlukan Windows LuaJIT ffi dan menyatakan SKIP jika tidak ada.
