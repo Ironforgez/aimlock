@@ -1,5 +1,6 @@
 package.path='./moonloader/lib/?.lua;'..package.path
 local release=arg and arg[1]
+local expected_version=release and release:match('AimLock(%d+%.%d+%.%d+)%.lua') or '1.4.0'
 local entrypoint=release or './moonloader/AimLock.lua'
 local function load_entry(env)
     env._G=env
@@ -237,7 +238,7 @@ local function native_fixture()
     end
     api.print=function(text) state.logs[#state.logs+1]=text end
     state.files={open=function(path,mode)
-        equal(mode,'ab'); assert(path:find('/logs/AimLock1.3.0-',1,true)); state.opened=state.opened+1
+        equal(mode,'ab'); assert(path:find('/logs/AimLock1.',1,true)); state.opened=state.opened+1
         return {write=function(self,value) state.output[#state.output+1]=value; return self end,
             close=function() return true end}
     end}
@@ -320,6 +321,25 @@ test('runtime buffers native events until poll and cleans up on close',function(
     runtime:close(); equal(native.opened,2); equal(runtime:is_active(),false)
 end)
 
+test('reconfiguring telemetry reuses observers and separates journal sessions',function()
+    local native=native_fixture(); local registrations=0; local register=native.api.addEventHandler
+    native.api.addEventHandler=function(...) registrations=registrations+1; return register(...) end
+    local manager=Runtime.manager(native.api,context,native.files)
+    local settings=assert(Settings.validate({}))
+    local first=assert(manager:configure(settings)); local packet=native.handlers.onSendPacket
+    local rpc=native.handlers.onSendRpc
+    native.handlers.onSendPacket(206,bullet_stream()); manager:poll(1500)
+    local second=assert(manager:configure(settings))
+    equal(first.closed,true); assert(first.log_path~=second.log_path)
+    equal(native.handlers.onSendPacket,packet); equal(native.handlers.onSendRpc,rpc); equal(registrations,2)
+    native.handlers.onSendPacket(206,bullet_stream()); equal(second.shot_id,1)
+    settings.telemetry_enabled=false; manager:configure(settings); equal(second.closed,true)
+    local reads=native.reads; native.handlers.onSendPacket(206,bullet_stream()); equal(native.reads,reads)
+    settings.telemetry_enabled=true; local third=assert(manager:configure(settings))
+    equal(registrations,2); native.handlers.onSendPacket(206,bullet_stream()); equal(third.shot_id,1)
+    manager:close(); manager:close(); equal(third.closed,true)
+end)
+
 test('main connects tracking distribution and telemetry and records baseline shots after Ctrl X OFF',function()
     local native=native_fixture(); local api=native.api; local camera_writes=0; native.keys={}
     api.PLAYER_PED=1
@@ -348,7 +368,7 @@ test('main connects tracking distribution and telemetry and records baseline sho
     local ok,err=pcall(function()
         local thread=coroutine.create(api.main)
         local function tick() local resumed,message=coroutine.resume(thread); assert(resumed,message) end
-        tick(); equal(api.version,'1.3.0'); equal(native.opened,0)
+        tick(); equal(api.version,expected_version); equal(native.opened,0)
         native.keys={[17]=true,[88]=true,[2]=true}; native.time=110; tick(); equal(camera_writes,1)
         equal(native.handlers.onSendPacket(206,bullet_stream()),nil)
         native.keys={}; native.time=120; tick()

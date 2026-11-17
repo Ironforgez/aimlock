@@ -1,5 +1,6 @@
 package.path = './moonloader/lib/?.lua;' .. package.path
 local release = arg and arg[1]
+local expected_version=release and release:match('AimLock(%d+%.%d+%.%d+)%.lua') or '1.4.0'
 local entrypoint = release or './moonloader/AimLock.lua'
 local function load_entry(env)
     env.script_name = function(value) env.name = value end
@@ -169,7 +170,7 @@ test('world rejects walls, out of range, offscreen and out of FOV targets', func
     s.screen[2]={900,900}; equal(s.world:validate_target({ped=2}),nil)
 end)
 
-local function entry()
+local function entry(gui_state)
     local s=scene()
     local env=setmetatable(s.api,{__index=_G})
     env.print=function(text) s.logs[#s.logs+1]=text end
@@ -188,6 +189,16 @@ local function entry()
     env.isCharOnFoot=function() return not s.vehicle end
     env.getCurrentCharWeapon=function() return s.weapon end
     env.wait=function(ms) coroutine.yield(ms) end
+    if gui_state then
+        s.commands={}
+        env.require=function(name)
+            if name=='mimgui' then return gui_state.ui end
+            if name=='ffi' then return gui_state.ffi end
+            return require(name)
+        end
+        env.sampIsChatCommandDefined=function() return false end
+        env.sampRegisterChatCommand=function(name,callback) s.commands[name]=callback; return true end
+    end
     load_entry(env)
     s.thread=coroutine.create(env.main)
     s.tick=function() local ok,err=coroutine.resume(s.thread); assert(ok,err) end
@@ -195,7 +206,7 @@ local function entry()
     return s
 end
 test('entrypoint starts OFF, Ctrl X enables real camera writes and disables again', function()
-    local s=entry(); s.tick(); equal(s.env.version,'1.3.0'); equal(#s.writes,0)
+    local s=entry(); s.tick(); equal(s.env.version,expected_version); equal(#s.writes,0)
     s.keys={[17]=true,[88]=true,[2]=true}; s.tick(); equal(#s.writes,1)
     s.tick(); equal(#s.writes,2)
     s.keys={[2]=true}; s.tick(); equal(#s.writes,3)
@@ -326,6 +337,22 @@ test('an occluded selected body point does not release the locked player', funct
     equal(controller:step({aiming=true,blocked=false,ctrl=false,x=false}),false)
     equal(controller.target.ped,2)
 end)
+test('configuration GUI blocks camera and Ctrl X then preserves current enabled state on apply',function()
+    local fake=assert(loadfile('tests/gui_fixture.lua'))()()
+    local s=entry(fake); s.tick(); assert(s.commands.aimlock); assert(s.commands.aimlog)
+    s.keys={[17]=true,[88]=true,[2]=true}; s.tick(); equal(#s.writes,1)
+    s.keys={[2]=true}; s.tick(); equal(#s.writes,2)
+    s.commands.aimlock(); s.tick(); equal(#s.writes,2); fake.render()
+    s.keys={[17]=true,[88]=true,[2]=true}; s.tick(); equal(#s.writes,2)
+    fake.edits['Jarak maksimum (1..300)']=80; fake.clicks.Terapkan=true; fake.render(); s.tick()
+    fake.clicks['Tutup panel']=true; fake.render(); s.tick(); equal(#s.writes,3)
+    s.keys={[2]=true}; s.tick(); equal(#s.writes,4)
+    s.commands.aimlock(); s.tick(); fake.edits['Jarak maksimum (1..300)']=1
+    fake.clicks.Terapkan=true; fake.render(); s.tick()
+    fake.clicks['Tutup panel']=true; fake.render(); s.tick(); equal(#s.writes,4)
+    s.env.onExitScript()
+end)
+
 test('entrypoint resets selection after release and OFF stops writes with random aim active', function()
     local s=entry(); s.tick(); s.keys={[17]=true,[88]=true,[2]=true}; s.tick()
     equal(#s.writes,1); assert(s.last_offset)
