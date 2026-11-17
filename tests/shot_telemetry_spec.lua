@@ -1,6 +1,6 @@
 package.path='./moonloader/lib/?.lua;'..package.path
 local release=arg and arg[1]
-local expected_version=release and release:match('AimLock(%d+%.%d+%.%d+)%.lua') or '1.4.0'
+local expected_version=release and release:match('AimLock(%d+%.%d+%.%d+)%.lua') or '1.5.0'
 local entrypoint=release or './moonloader/AimLock.lua'
 local function load_entry(env)
     env._G=env
@@ -340,7 +340,7 @@ test('reconfiguring telemetry reuses observers and separates journal sessions',f
     manager:close(); manager:close(); equal(third.closed,true)
 end)
 
-test('main connects tracking distribution and telemetry and records baseline shots after Ctrl X OFF',function()
+test('main connects tracking distribution and telemetry and records baseline shots after Alt X OFF',function()
     local native=native_fixture(); local api=native.api; local camera_writes=0; native.keys={}
     api.PLAYER_PED=1
     for _,name in ipairs({'isSampLoaded','isSampfuncsLoaded','isSampAvailable','isGameWindowForeground',
@@ -369,10 +369,10 @@ test('main connects tracking distribution and telemetry and records baseline sho
         local thread=coroutine.create(api.main)
         local function tick() local resumed,message=coroutine.resume(thread); assert(resumed,message) end
         tick(); equal(api.version,expected_version); equal(native.opened,0)
-        native.keys={[17]=true,[88]=true,[2]=true}; native.time=110; tick(); equal(camera_writes,1)
+        native.keys={[18]=true,[88]=true,[2]=true}; native.time=110; tick(); equal(camera_writes,1)
         equal(native.handlers.onSendPacket(206,bullet_stream()),nil)
         native.keys={}; native.time=120; tick()
-        native.keys={[17]=true,[88]=true,[2]=true}; native.time=130; tick(); equal(camera_writes,1)
+        native.keys={[18]=true,[88]=true,[2]=true}; native.time=130; tick(); equal(camera_writes,1)
         equal(native.handlers.onSendPacket(206,bullet_stream()),nil)
         native.time=1500; tick(); api.onExitScript()
         local shots={}

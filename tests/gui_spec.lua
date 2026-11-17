@@ -12,6 +12,7 @@ local Model=loader('AimLockDistribution.gui_model')
 local View=loader('AimLockDistribution.log_view')
 local Gui=loader('AimLockDistribution.gui')
 local Runtime=loader('AimLockDistribution.gui_runtime')
+local Identity=loader('AimLockDistribution.identity')
 local fake_gui=assert(loadfile('tests/gui_fixture.lua'))()
 local passed,failed=0,0
 local function equal(a,b) assert(a==b,tostring(a)..' ~= '..tostring(b)) end
@@ -46,13 +47,16 @@ local function memory_files(initial)
     state.remove=function(path) state.data[path]=nil end
     return state
 end
-test('GUI settings and distinct command names validate and round-trip all fields',function()
-    local config=assert(Settings.validate({gui_command='arfie_cfg',gui_log_command='arfie_log'}))
+test('single panel command validates and legacy command settings migrate',function()
+    local config=assert(Settings.validate({gui_command='arfie_cfg'}))
     local serialized=assert(Store.serialize(config)); local parsed=assert(Settings.parse(serialized))
     equal(parsed.gui_command,'arfie_cfg'); equal(parsed.gui_enabled,true)
     equal(Store.serialize(parsed),serialized)
     for _,values in ipairs({{gui_enabled=1},{gui_command='BAD'},{gui_command='/aim'},
-        {gui_command=''},{gui_command=string.rep('a',21)},{gui_command='aimlog'}}) do equal(Settings.validate(values),nil) end
+        {gui_command=''},{gui_command=string.rep('a',21)}}) do equal(Settings.validate(values),nil) end
+    local old=assert(Settings.parse('[aimlock]\ngui_command=aimlock\ngui_log_command=aimlog'))
+    equal(old.gui_command,'apanel'); equal(old.gui_log_command,nil)
+    assert(not Store.serialize(old):find('gui_log_command',1,true))
 end)
 test('atomic save writes a backup and never replaces original before complete writes',function()
     local fs=memory_files({['config.ini']='old-content'})
@@ -161,54 +165,57 @@ local function render_fixture()
     local function draw() gui:draw(); equal(fake.depth,0) end
     return fake,s,view,gui,requests,draw
 end
-test('sidebar and every editable setting mutate the draft through widgets',function()
+test('minimal settings and collapsed advanced fields edit every current setting',function()
     local fake,s,view,gui,requests,draw=render_fixture()
-    local settings={{'Aktif saat script dimuat',true},{'Jarak maksimum (1..300)',75},{'Radius FOV (0.01..0.5)',0.2},
-        {'Offset tinggi (-1..1)',0.4},{'Crosshair X (0..1)',0.5},{'Crosshair Y (0..1)',0.5},
-        {'Aktifkan GUI saat startup',false},{'Command panel tanpa /','config'},{'Command log tanpa /','log'}}
+    draw(); assert(not fake.seen['Radius FOV']); assert(not fake.seen['Torso (%)'])
+    local settings={{'Aktif saat masuk',true},{'Jarak',75},{'Radius FOV',0.2},
+        {'Offset tinggi',0.4},{'Crosshair X',0.5},{'Crosshair Y',0.5},
+        {'GUI saat mulai',false},{'Command','config'}}
+    fake.clicks.Lanjutan=true
     for _,item in ipairs(settings) do fake.edits[item[1]]=item[2] end
     draw(); equal(s.model.draft.max_distance,75); equal(s.model.draft.gui_enabled,false)
     equal(s.model.draft.gui_command,'config'); equal(s.model.draft.enabled,true)
-    fake.clicks.Distribusi=true; draw(); equal(gui.page,2)
-    fake.edits['Random aim']=false; fake.edits['Interval ms (100..5000)']=500
-    fake.edits['Seed: auto atau integer']='123'
+    fake.clicks.Distribusi=true; draw(); equal(gui.page,1)
+    fake.edits['Acak titik']=false; fake.edits['Interval (ms)']=500
+    fake.edits.Seed='123'
     for _,label in ipairs({'Torso','Lengan kiri','Lengan kanan','Kaki kiri','Kaki kanan','Kepala'}) do
         fake.edits[label..' (%)']=label=='Torso' and 100 or 0
     end
     draw(); equal(s.model:total(),100); equal(s.model.draft.random_seed,123); equal(s.model.draft.random_aim,false)
-    fake.clicks.Telemetry=true; draw(); equal(gui.page,3)
-    fake.edits['Rekam telemetry']=false; fake.edits['Jendela korelasi ms (50..3000)']=500
-    fake.edits['Interval tulis ms (100..10000)']=200; draw()
+    fake.edits['Rekam log']=false; fake.edits['Korelasi (ms)']=500
+    fake.edits['Tulis log (ms)']=200; draw()
     equal(s.model.draft.telemetry_enabled,false); equal(s.model.draft.telemetry_match_window_ms,500)
-    fake.clicks.Konfigurasi=true; draw(); equal(gui.page,1); equal(s.applied,0)
+    fake.clicks.Log=true; draw(); equal(gui.page,2)
+    fake.clicks.Pengaturan=true; draw(); equal(gui.page,1); equal(s.applied,0)
 end)
 test('all configuration toolbar actions have observable behavior and UI scopes balance',function()
     local fake,s,view,gui,requests,draw=render_fixture()
-    for label,action in pairs({Terapkan='apply',['Simpan & Terapkan']='save',['Muat INI']='reload',
-        Default='defaults',['Batalkan draft']='discard'}) do
+    fake.clicks.Lanjutan=true; draw()
+    for label,action in pairs({Terapkan='apply',Simpan='save',['Muat INI']='reload',
+        Default='defaults',Batalkan='discard'}) do
         fake.clicks[label]=true; draw(); equal(s.model.pending,action); s.model:poll()
     end
     fake.edits['Ukuran teks']=2; draw(); equal(gui.scale[0],2)
     fake.flags.DisplaySize={x=800,y=600}; draw()
     assert(fake.window_size.x<=800 and fake.window_size.y<=600)
     equal(fake.window_pos.x,400); equal(fake.window_pos.y,300)
-    fake.clicks['Tutup panel']=true; draw(); equal(gui:is_open(),false)
+    fake.close_window=true; draw(); equal(gui:is_open(),false)
     gui:open(); fake.escape=true; draw(); equal(gui:is_open(),false)
 end)
 test('log navigation file event search and row detail controls are connected',function()
     local fake,s,view,gui,requests,draw=render_fixture()
     gui.files={'/logs/AimLock1.4.0-test.jsonl'}; view:line('shot:7')
-    fake.clicks.Log=true; draw(); equal(gui.page,4)
-    for _,label in ipairs({'Daftar ulang file','Sesi aktif','Refresh','Bersihkan tampilan','AimLock1.4.0-test.jsonl'}) do
+    fake.clicks.Log=true; draw(); equal(gui.page,2); equal(requests[1][1],'current')
+    fake.clicks['Filter & berkas']=true; draw()
+    for _,label in ipairs({'Cari berkas','Sesi aktif','Refresh','Kosongkan tampilan','Panel1.4.0-test.jsonl'}) do
         fake.clicks[label]=true; draw()
     end
-    equal(#requests,5); equal(requests[5][1],'select')
-    fake.edits['Refresh otomatis']=false; fake.edits['Cari isi log']='shot'; fake.edits['ID target']='7'
+    equal(#requests,6); equal(requests[6][1],'select')
+    fake.edits['Refresh otomatis']=false; fake.edits.Cari='shot'; fake.edits['ID target']='7'
     fake.clicks.shot=true; fake.clicks['10##event_1']=true; draw()
     equal(gui.auto[0],false); equal(view.filter,'shot'); equal(view.target,'7'); equal(view.event,'shot')
-    equal(view.selected,view.rows[1]); assert(table.concat(fake.texts,'\n'):find('shot:7',1,true))
-    fake.clicks.Telemetry=true; draw(); fake.clicks['Lihat log sesi aktif']=true; draw()
-    equal(gui.page,4); equal(requests[#requests][1],'current')
+    equal(view.selected,view.rows[1]); fake.clicks.Detail=true; draw()
+    assert(table.concat(fake.texts,'\n'):find('shot:7',1,true))
 end)
 local function runtime_fixture(conflict)
     local fake=fake_gui(); local state={commands={},messages={},prints={},registrations=0,closed=0}
@@ -229,9 +236,11 @@ test('optional GUI missing dependency disabled config and command conflict degra
     local result,err=Runtime.start(assert(Settings.validate({})),s.api,s.bridge)
     equal(result,nil); assert(err:find('mimgui',1,true)); equal(s.registrations,0)
     equal(Runtime.start(assert(Settings.validate({gui_enabled=false})),s.api,s.bridge),nil)
-    s=runtime_fixture('aimlock'); local runtime=assert(Runtime.start(assert(Settings.validate({})),s.api,s.bridge))
-    equal(s.commands.aimlock,nil); assert(s.commands.aimlog); equal(#s.messages,1)
-    s.commands.aimlog(); equal(runtime.gui.page,4); assert(runtime:is_open()); runtime:poll(100,true); s.fake.render()
+    s=runtime_fixture('apanel'); local runtime=assert(Runtime.start(assert(Settings.validate({})),s.api,s.bridge))
+    equal(s.registrations,0); equal(s.commands.apanel,nil); equal(#s.messages,1)
+    s=runtime_fixture(); runtime=assert(Runtime.start(assert(Settings.validate({})),s.api,s.bridge))
+    equal(s.registrations,1); equal(s.commands.aimlock,nil); equal(s.commands.aimlog,nil)
+    s.commands.apanel(); equal(runtime.gui.page,1); assert(runtime:is_open()); runtime:poll(100,true); s.fake.render()
     runtime:close(); equal(runtime:is_open(),false); equal(s.fake.draw,nil)
 end)
 test('runtime closes enumeration handle rejects traversal and caps log list',function()
@@ -245,8 +254,25 @@ test('runtime closes enumeration handle rejects traversal and caps log list',fun
 end)
 test('render exception unwinds UI scopes and disables GUI without throwing into main',function()
     local s=runtime_fixture(); local runtime=assert(Runtime.start(assert(Settings.validate({})),s.api,s.bridge))
-    s.commands.aimlock(); s.fake.ui.InputFloat=function() error('Injected rendering failure') end
+    s.commands.apanel(); s.fake.ui.InputFloat=function() error('Injected rendering failure') end
     s.fake.render(); equal(runtime:is_open(),false); equal(#s.prints,1); equal(s.fake.depth,0)
+end)
+test('author sits at upper right and visible UI omits script branding including old logs',function()
+    local fake,s,view,gui,requests,draw=render_fixture()
+    draw(); equal(fake.title,'Panel')
+    equal(fake.author_x,840-#Identity.author*7)
+    assert(table.concat(fake.texts,'\n'):find(Identity.author,1,true))
+    fake.ui.GetCursorPosX=function() return 10 end
+    fake.ui.GetWindowContentRegionMax=function() return {x=200,y=560} end
+    draw(); equal(fake.author_x,200-#Identity.author*7)
+    gui.files={'/logs/AimLock1.4.0-test.jsonl'}; view.path=gui.files[1]
+    view.status='Gagal membaca /logs/AimLock1.4.0-test.jsonl'
+    view:line('shot:7'); view.rows[1].raw='{"session_id":"AimLock1.4.0-test","aimlock_enabled":true}'
+    view.selected=view.rows[1]; fake.headers['Filter & berkas']=true; fake.headers.Detail=true
+    fake.clicks.Log=true; draw()
+    for _,text in ipairs(fake.texts) do assert(not text:lower():find('aimlock',1,true),text) end
+    for label in pairs(fake.seen) do assert(not label:lower():find('aimlock',1,true),label) end
+    assert(view.rows[1].raw:find('AimLock',1,true),'Raw log must remain unchanged')
 end)
 print(string.format('\n%d passed; %d failed',passed,failed))
 if failed>0 then os.exit(1) end

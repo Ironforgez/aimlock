@@ -6,7 +6,7 @@ const luaparse = require('luaparse');
 
 const root = path.resolve(__dirname, '..');
 const checkOnly = process.argv.includes('--check');
-const modules = ['config', 'random', 'engine', 'settings', 'aim_point', 'camera', 'controller', 'world',
+const modules = ['identity', 'config', 'random', 'engine', 'settings', 'aim_point', 'camera', 'controller', 'world',
   'telemetry', 'telemetry_observer', 'telemetry_journal', 'telemetry_runtime',
   'config_store', 'gui_model', 'log_view', 'gui', 'gui_runtime'];
 const entryPath = 'moonloader/AimLock.lua';

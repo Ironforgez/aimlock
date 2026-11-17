@@ -1,5 +1,7 @@
 # AimLock 1.4.0: GUI konfigurasi dan log
 
+Arsip versi 1.4.0. Versi terbaru [1.5.0](AimLock-GUI-1.5.0.md) memakai panel minimal dua menu, satu command `/apanel`, Alt + X dan identitas author pada GUI/chat. Prosedur `/aimlock`, `/aimlog` dan Ctrl + X di bawah hanya berlaku untuk 1.4.0. Snapshot source lama kemudian ditambahkan ke repo melalui commit terpisah; kebijakan publikasi update 1.5.0 dijelaskan di dokumen terbaru.
+
 Versi ini menambahkan panel mimgui dengan sidebar Konfigurasi, Distribusi, Telemetry, dan Log. Aim Tracking, Weighted Aim Point Distribution, Ctrl + X, dan pengamatan telemetry pasif dari 1.3.0 tetap tersedia. Tidak ada mekanisme baru yang memaksa hit, mengubah payload, atau menembak otomatis.
 
 ## Instalasi dan dependensi

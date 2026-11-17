@@ -1,6 +1,6 @@
 package.path = './moonloader/lib/?.lua;' .. package.path
 local release = arg and arg[1]
-local expected_version=release and release:match('AimLock(%d+%.%d+%.%d+)%.lua') or '1.4.0'
+local expected_version=release and release:match('AimLock(%d+%.%d+%.%d+)%.lua') or '1.5.0'
 local entrypoint = release or './moonloader/AimLock.lua'
 local function load_entry(env)
     env.script_name = function(value) env.name = value end
@@ -85,12 +85,12 @@ local function controls()
         point_at=function() state.writes=state.writes+1; return true end,
         on_toggle=function() state.toggles=state.toggles+1 end
     })
-    state.step = function(ctrl, x, aiming, blocked)
-        return state.controller:step({ctrl=ctrl, x=x, aiming=aiming, blocked=blocked})
+    state.step = function(alt, x, aiming, blocked)
+        return state.controller:step({alt=alt, x=x, aiming=aiming, blocked=blocked})
     end
     return state
 end
-test('Ctrl X toggles once per chord and OFF never writes camera', function()
+test('Alt X toggles once per chord and OFF never writes camera', function()
     local s=controls()
     s.step(false,false,true,false); equal(s.writes,0)
     s.step(true,true,true,false); s.step(true,true,true,false)
@@ -98,7 +98,7 @@ test('Ctrl X toggles once per chord and OFF never writes camera', function()
     s.step(false,false,true,false); s.step(true,true,true,false)
     equal(s.toggles,2); equal(s.writes,3); equal(s.controller.enabled,false)
 end)
-test('X alone does not toggle and Ctrl pressed after X toggles', function()
+test('X alone does not toggle and Alt pressed after X toggles', function()
     local s=controls(); s.step(false,true,true,false); equal(s.toggles,0)
     s.step(true,true,true,false); equal(s.toggles,1)
 end)
@@ -205,24 +205,24 @@ local function entry(gui_state)
     s.env=env
     return s
 end
-test('entrypoint starts OFF, Ctrl X enables real camera writes and disables again', function()
+test('entrypoint starts OFF, Alt X enables real camera writes and disables again', function()
     local s=entry(); s.tick(); equal(s.env.version,expected_version); equal(#s.writes,0)
-    s.keys={[17]=true,[88]=true,[2]=true}; s.tick(); equal(#s.writes,1)
+    s.keys={[18]=true,[88]=true,[2]=true}; s.tick(); equal(#s.writes,1)
     s.tick(); equal(#s.writes,2)
     s.keys={[2]=true}; s.tick(); equal(#s.writes,3)
-    s.keys={[17]=true,[88]=true,[2]=true}; s.tick(); equal(#s.writes,3)
+    s.keys={[18]=true,[88]=true,[2]=true}; s.tick(); equal(#s.writes,3)
     assert(table.concat(s.messages,'\n'):find('OFF',1,true))
 end)
 test('entrypoint releases camera for chat dialog pause console and lost focus', function()
     for _, field in ipairs({'chat','dialog','pause','console','background'}) do
-        local s=entry(); s.tick(); s.keys={[17]=true,[88]=true,[2]=true}; s.tick()
+        local s=entry(); s.tick(); s.keys={[18]=true,[88]=true,[2]=true}; s.tick()
         s.keys={[2]=true}; s[field]=true; s.tick(); equal(#s.writes,1)
         s[field]=false; s.tick(); equal(#s.writes,2)
     end
 end)
 test('entrypoint suppresses camera when not aiming, dead, in vehicle, wrong weapon or disconnected', function()
     for _, field in ipairs({'release','dead','vehicle','weapon','ready','unspawned'}) do
-        local s=entry(); s.tick(); s.keys={[17]=true,[88]=true,[2]=true}; s.tick()
+        local s=entry(); s.tick(); s.keys={[18]=true,[88]=true,[2]=true}; s.tick()
         s.keys={[2]=true}
         if field=='release' then s.keys={} elseif field=='dead' then s.dead[1]=true
         elseif field=='vehicle' then s.vehicle=true elseif field=='weapon' then s.weapon=34
@@ -332,34 +332,44 @@ test('an occluded selected body point does not release the locked player', funct
         if z>0.7 then return false end
         return line_of_sight(a,b,c,x,y,z,...)
     end
-    equal(controller:step({aiming=true,blocked=false,ctrl=false,x=false}),false)
+    equal(controller:step({aiming=true,blocked=false,alt=false,x=false}),false)
     equal(assert(controller.target).ped,2); equal(#s.writes,0)
-    equal(controller:step({aiming=true,blocked=false,ctrl=false,x=false}),false)
+    equal(controller:step({aiming=true,blocked=false,alt=false,x=false}),false)
     equal(controller.target.ped,2)
 end)
-test('configuration GUI blocks camera and Ctrl X then preserves current enabled state on apply',function()
+test('configuration GUI blocks camera and Alt X then preserves current enabled state on apply',function()
     local fake=assert(loadfile('tests/gui_fixture.lua'))()()
-    local s=entry(fake); s.tick(); assert(s.commands.aimlock); assert(s.commands.aimlog)
-    s.keys={[17]=true,[88]=true,[2]=true}; s.tick(); equal(#s.writes,1)
+    local s=entry(fake); s.tick(); assert(s.commands.apanel); equal(s.commands.aimlock,nil); equal(s.commands.aimlog,nil)
+    s.keys={[18]=true,[88]=true,[2]=true}; s.tick(); equal(#s.writes,1)
     s.keys={[2]=true}; s.tick(); equal(#s.writes,2)
-    s.commands.aimlock(); s.tick(); equal(#s.writes,2); fake.render()
-    s.keys={[17]=true,[88]=true,[2]=true}; s.tick(); equal(#s.writes,2)
-    fake.edits['Jarak maksimum (1..300)']=80; fake.clicks.Terapkan=true; fake.render(); s.tick()
-    fake.clicks['Tutup panel']=true; fake.render(); s.tick(); equal(#s.writes,3)
+    s.commands.apanel(); s.tick(); equal(#s.writes,2); fake.render()
+    s.keys={[18]=true,[88]=true,[2]=true}; s.tick(); equal(#s.writes,2)
+    fake.edits.Jarak=80; fake.clicks.Terapkan=true; fake.render(); s.tick()
+    fake.escape=true; fake.render(); s.tick(); equal(#s.writes,3)
     s.keys={[2]=true}; s.tick(); equal(#s.writes,4)
-    s.commands.aimlock(); s.tick(); fake.edits['Jarak maksimum (1..300)']=1
+    s.commands.apanel(); s.tick(); fake.edits.Jarak=1
     fake.clicks.Terapkan=true; fake.render(); s.tick()
-    fake.clicks['Tutup panel']=true; fake.render(); s.tick(); equal(#s.writes,4)
+    fake.escape=true; fake.render(); s.tick(); equal(#s.writes,4)
     s.env.onExitScript()
 end)
 
 test('entrypoint resets selection after release and OFF stops writes with random aim active', function()
-    local s=entry(); s.tick(); s.keys={[17]=true,[88]=true,[2]=true}; s.tick()
+    local s=entry(); s.tick(); s.keys={[18]=true,[88]=true,[2]=true}; s.tick()
     equal(#s.writes,1); assert(s.last_offset)
     s.keys={}; s.tick(); equal(#s.writes,1)
     s.time=1000; s.keys={[2]=true}; s.tick(); equal(#s.writes,2)
-    s.keys={[17]=true,[88]=true,[2]=true}; s.tick(); equal(#s.writes,2)
-    assert(table.concat(s.messages,'\n'):find('Random aim: ON',1,true))
+    s.keys={[18]=true,[88]=true,[2]=true}; s.tick(); equal(#s.writes,2)
+    assert(table.concat(s.messages,'\n'):find('Alt + X',1,true))
+end)
+
+test('Ctrl X no longer toggles and every chat line uses author identity',function()
+    local s=entry(); s.tick()
+    s.keys={[17]=true,[88]=true,[2]=true}; s.tick(); equal(#s.writes,0)
+    s.keys={}; s.tick(); s.keys={[18]=true,[88]=true,[2]=true}; s.tick(); equal(#s.writes,1)
+    for _,line in ipairs(s.messages) do
+        assert(line:find('[IronForgez | Arvin_Inc]',1,true)==1)
+        assert(not line:lower():find('aimlock',1,true))
+    end
 end)
 
 print(string.format('\n%d passed; %d failed',passed,failed))
