@@ -1,6 +1,4 @@
 # Readable development sources stay on this workstation.
-/moonloader/AimLock.lua
-/moonloader/lib/AimLockDistribution/
 /moonloader/archive/
 
 # Release build dependencies.
