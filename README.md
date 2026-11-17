@@ -19,7 +19,7 @@ Simulator Weighted Random untuk distribusi bagian tubuh. Semua hasil dibuat dari
 3. Salin [AimLock.ini](moonloader/config/AimLock.ini) ke `<GTA SA>/moonloader/config/AimLock.ini`. Buat folder `config` jika belum ada.
 4. Jalankan game dan tunggu SA-MP siap. Pesan `[HitDist] Simulator siap` menunjukkan registrasi command berhasil.
 
-Pasang satu salinan script. Jika sebelumnya memasang `AimLock.lua` atau `ArfieHitDistribution.lua`, pindahkan salinan lama keluar dari folder MoonLoader sebelum memasang versi distribusi. Enam modul sudah dibundel ke `AimLock1.0.0.lua`, sehingga folder `lib/arfie_hit_distribution` tidak perlu dibagikan. Tidak diperlukan SAMP.Lua, ImGui, `inicfg`, atau library eksternal untuk menjalankan simulator.
+Pasang satu salinan script. Jika sebelumnya memasang `AimLock.lua` atau `ArfieHitDistribution.lua`, pindahkan salinan lama keluar dari folder MoonLoader sebelum memasang versi distribusi. Enam modul sudah dibundel ke `AimLock1.0.0.lua`, sehingga folder `lib/AimLockDistribution` tidak perlu dibagikan. Tidak diperlukan SAMP.Lua, ImGui, `inicfg`, atau library eksternal untuk menjalankan simulator.
 
 ## Penggunaan
 
@@ -45,7 +45,7 @@ Ubah probabilitas di INI, pertahankan total 100%, lalu reload script atau mulai 
 - [Suite pengujian](tests/hit_distribution_spec.lua)
 - [Alat build](tools/build-release.cjs)
 
-Source pengembangan `moonloader/AimLock.lua` dan `moonloader/lib/arfie_hit_distribution/` dipertahankan lokal dan diabaikan Git. File publik memakai bundling, minifikasi, penggantian nama variabel lokal, dan escape numerik pada string. Obfuscation mempersulit pembacaan, tetapi tidak menjamin kode tidak dapat dipulihkan. Petunjuk build ulang tersedia pada dokumentasi; source lokal diperlukan untuk build.
+Source pengembangan `moonloader/AimLock.lua` dan `moonloader/lib/AimLockDistribution/` dipertahankan lokal dan diabaikan Git. File publik memakai bundling, minifikasi, penggantian nama variabel lokal, dan escape numerik pada string. Obfuscation mempersulit pembacaan, tetapi tidak menjamin kode tidak dapat dipulihkan. Petunjuk build ulang tersedia pada dokumentasi; source lokal diperlukan untuk build.
 
 ## Pengujian
 

@@ -17,12 +17,12 @@ if release_path then
     assert(type(load_module) == 'function', 'Expected private bundled module accessor')
 end
 
-local Config = load_module('arfie_hit_distribution.config')
-local Random = load_module('arfie_hit_distribution.random')
-local Engine = load_module('arfie_hit_distribution.engine')
-local Statistics = load_module('arfie_hit_distribution.statistics')
-local Simulation = load_module('arfie_hit_distribution.simulation')
-local Integration = load_module('arfie_hit_distribution.integration')
+local Config = load_module('AimLockDistribution.config')
+local Random = load_module('AimLockDistribution.random')
+local Engine = load_module('AimLockDistribution.engine')
+local Statistics = load_module('AimLockDistribution.statistics')
+local Simulation = load_module('AimLockDistribution.simulation')
+local Integration = load_module('AimLockDistribution.integration')
 
 local passed, failed = 0, 0
 local keys = { 'torso', 'left_arm', 'right_arm', 'left_leg', 'right_leg', 'head' }
@@ -681,13 +681,13 @@ test('entrypoint resolves bundled modules and reports missing configuration', fu
     local invalid_ini = entrypoint_fixture()
     invalid_ini.on_load = function(bundled_require)
         if bundled_require then
-            bundled_require('arfie_hit_distribution.config').load = function()
+            bundled_require('AimLockDistribution.config').load = function()
                 return nil, 'Invalid total probability'
             end
         end
     end
     invalid_ini.env.require = function(name)
-        if name == 'arfie_hit_distribution.config' then
+        if name == 'AimLockDistribution.config' then
             return { load = function() return nil, 'Invalid total probability' end }
         end
         return require(name)

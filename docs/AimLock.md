@@ -2,7 +2,7 @@
 
 ## Ruang lingkup
 
-Source lokal `AimLock.lua` menggunakan modul `arfie_hit_distribution` untuk menghasilkan sampel kategori tubuh berdasarkan probabilitas yang dikonfigurasi. Versi publik adalah [AimLock1.0.0.lua](../moonloader/AimLock1.0.0.lua), yang membundel seluruh modul dalam satu file obfuscated. Simulasi hanya berjalan melalui `Simulation:run()` atau command `simulate`, tanpa mengamati atau memengaruhi combat game. Label tubuh adalah kategori statistik, bukan ID body part pada packet SA-MP.
+Source lokal `AimLock.lua` menggunakan modul `AimLockDistribution` untuk menghasilkan sampel kategori tubuh berdasarkan probabilitas yang dikonfigurasi. Versi publik adalah [AimLock1.0.0.lua](../moonloader/AimLock1.0.0.lua), yang membundel seluruh modul dalam satu file obfuscated. Simulasi hanya berjalan melalui `Simulation:run()` atau command `simulate`, tanpa mengamati atau memengaruhi combat game. Label tubuh adalah kategori statistik, bukan ID body part pada packet SA-MP.
 
 ## Struktur dan tanggung jawab
 
@@ -13,7 +13,7 @@ moonloader/
   AimLock.lua                         source lokal, diabaikan Git
   config/
     AimLock.ini                       konfigurasi yang dibaca saat startup
-  lib/arfie_hit_distribution/          source lokal, diabaikan Git
+  lib/AimLockDistribution/             source lokal, diabaikan Git
     config.lua                        parser INI, default, validasi
     random.lua                        PRNG Park-Miller dengan state per instance
     engine.lua                        pemilihan interval berbobot
@@ -158,8 +158,8 @@ API berikut ditujukan untuk source pengembangan lokal, yang tidak disertakan dal
 ```lua
 package.path = './moonloader/lib/?.lua;' .. package.path
 
-local Config = require 'arfie_hit_distribution.config'
-local Simulation = require 'arfie_hit_distribution.simulation'
+local Config = require 'AimLockDistribution.config'
+local Simulation = require 'AimLockDistribution.simulation'
 
 local config = Config.defaults()
 config.general.seed = 12345
@@ -256,7 +256,7 @@ SOP perubahan berikutnya: baca dokumentasi terkait, ubah modul dengan tanggung j
 
 ## SOP build dan publikasi
 
-Source pengembangan `moonloader/AimLock.lua` beserta enam modul di `moonloader/lib/arfie_hit_distribution/` tetap disimpan lokal melalui `.gitignore`. Repository publik berisi artefak obfuscated, INI, manifest, dokumentasi, suite, dan alat build. Source lokal diperlukan untuk membangun ulang; clone repository saja cukup untuk menjalankan tes artefak, tetapi tidak cukup untuk membangun artefak baru.
+Source pengembangan `moonloader/AimLock.lua` beserta enam modul di `moonloader/lib/AimLockDistribution/` tetap disimpan lokal melalui `.gitignore`. Repository publik berisi artefak obfuscated, INI, manifest, dokumentasi, suite, dan alat build. Source lokal diperlukan untuk membangun ulang; clone repository saja cukup untuk menjalankan tes artefak, tetapi tidak cukup untuk membangun artefak baru.
 
 `.gitattributes` mempertahankan byte file distribusi, manifest, dan INI tanpa konversi newline Git agar hash dalam manifest konsisten setelah clone atau download.
 

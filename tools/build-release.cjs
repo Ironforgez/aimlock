@@ -9,7 +9,7 @@ const checkOnly = process.argv.includes('--check');
 const modules = ['config', 'random', 'engine', 'statistics', 'simulation', 'integration'];
 const entryPath = 'moonloader/AimLock.lua';
 const sourcePaths = [entryPath, ...modules.map(name =>
-  `moonloader/lib/arfie_hit_distribution/${name}.lua`)];
+  `moonloader/lib/AimLockDistribution/${name}.lua`)];
 const sha256 = value => crypto.createHash('sha256').update(value).digest('hex');
 
 function build() {
@@ -36,7 +36,7 @@ local function bundled_require(name)
 end
 `;
   for (const source of sources.slice(1)) {
-    const name = `arfie_hit_distribution.${path.basename(source.path, '.lua')}`;
+    const name = `AimLockDistribution.${path.basename(source.path, '.lua')}`;
     bundle += `factories[${JSON.stringify(name)}] = function(require)\n${source.text}\nend\n`;
   }
   bundle += `(function(require)\n${entry}\nend)(bundled_require)\nreturn bundled_require\n`;
