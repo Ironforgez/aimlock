@@ -1,5 +1,7 @@
 # AimLock 1.3.0: Shot Telemetry
 
+Dokumen ini merekam versi 1.3.0. Versi terbaru [1.4.0](AimLock-GUI-1.4.0.md) menambahkan GUI konfigurasi/log, live apply, save INI dengan backup dan manager telemetry yang memakai ulang observer. Nama sesi terbaru menambahkan nomor urut. Schema laporan dan batas interpretasi di bawah tetap relevan; instalasi terbaru mengikuti dokumen 1.4.0.
+
 ## Arsitektur tiga modul
 
 | Lapisan | Implementasi | Tanggung jawab |
