@@ -1,5 +1,7 @@
 # AimLock 1.2.0: random aim saat lock
 
+Dokumentasi arsip versi 1.2.0. Source dan alat build aktif sekarang menghasilkan [versi Shot Telemetry 1.3.0](AimLock-shot-telemetry-1.3.0.md). Hasil 28 kelompok tes di bawah adalah catatan pengujian versi ini; suite pada branch aktif menguji versi terbaru. Untuk mereproduksi pengujian 1.2.0, gunakan suite pada commit `82a3426`.
+
 ## Perbedaan versi
 
 | Versi | Perilaku |

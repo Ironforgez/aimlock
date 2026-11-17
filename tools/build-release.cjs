@@ -6,7 +6,8 @@ const luaparse = require('luaparse');
 
 const root = path.resolve(__dirname, '..');
 const checkOnly = process.argv.includes('--check');
-const modules = ['config', 'random', 'engine', 'settings', 'aim_point', 'camera', 'controller', 'world'];
+const modules = ['config', 'random', 'engine', 'settings', 'aim_point', 'camera', 'controller', 'world',
+  'telemetry', 'telemetry_observer', 'telemetry_journal', 'telemetry_runtime'];
 const entryPath = 'moonloader/AimLock.lua';
 const sourcePaths = [entryPath, ...modules.map(name =>
   `moonloader/lib/AimLockDistribution/${name}.lua`)];
@@ -76,6 +77,9 @@ end
   }
   if (!outputAst.globals.some(node => node.name === 'main')) {
     throw new Error('MoonLoader global main hook was lost.');
+  }
+  if (!outputAst.globals.some(node => node.name === 'onExitScript')) {
+    throw new Error('MoonLoader onExitScript cleanup hook was lost.');
   }
 
   const artifactPath = `moonloader/AimLock${version}.lua`;
