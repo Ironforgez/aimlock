@@ -1,0 +1,14 @@
+{
+  "name": "aimlock-release-tools",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bundle and obfuscate the local AimLock development sources.",
+  "scripts": {
+    "build": "node build-release.cjs",
+    "check": "node build-release.cjs --check"
+  },
+  "devDependencies": {
+    "luamin": "1.0.4",
+    "luaparse": "0.3.1"
+  }
+}

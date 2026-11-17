@@ -1,0 +1,47 @@
+{
+  "version": "1.0.0",
+  "artifact": "moonloader/AimLock1.0.0.lua",
+  "artifact_sha256": "0e9e7aa9b0dcfec507d8eb7e9c95435ee600776851dd45895d1afc9cd3b94519",
+  "source_set_sha256": "af2a1f773f0e30702a3ce585f8523e8e4961eb22d84a4147e19a64a2460b22b0",
+  "sources": [
+    {
+      "path": "moonloader/AimLock.lua",
+      "sha256": "16ae362f9a27bab9366b761b86f3ddf6a4a7b4a07c20577254df4fc03f653662"
+    },
+    {
+      "path": "moonloader/lib/arfie_hit_distribution/config.lua",
+      "sha256": "6e114b400fb737e981019a6478c1a1fb64eca968580c0e916b2b40d5321ad8e5"
+    },
+    {
+      "path": "moonloader/lib/arfie_hit_distribution/random.lua",
+      "sha256": "ad7ce6bdf047ffe528d9ff874a5be7651053b3e97aa912ac61db0d72169139b4"
+    },
+    {
+      "path": "moonloader/lib/arfie_hit_distribution/engine.lua",
+      "sha256": "aee8bdf8f3b003bfc349b12b009367783c8d3573ea7c911271aeb258d5cc8adb"
+    },
+    {
+      "path": "moonloader/lib/arfie_hit_distribution/statistics.lua",
+      "sha256": "635bbd886addadacd9dce56f022a7a382fbd8065bc09c7e0a0ff3ff91065d6e2"
+    },
+    {
+      "path": "moonloader/lib/arfie_hit_distribution/simulation.lua",
+      "sha256": "2c834bde17857498eed95dbc45479a853be391860334ec8389b0cfab4da1f62d"
+    },
+    {
+      "path": "moonloader/lib/arfie_hit_distribution/integration.lua",
+      "sha256": "8918d267ef1aef7a392c8dd73fe0d1530525b2d1e90e3e313803db73a9a8933a"
+    }
+  ],
+  "configuration": {
+    "path": "moonloader/config/AimLock.ini",
+    "sha256": "6218b770a4af3343ed312a9ad3bd13e8d52a100cbbc5cca0aae25ef964614c00"
+  },
+  "modules": 6,
+  "encoded_strings": 164,
+  "tools": {
+    "luamin": "1.0.4",
+    "luaparse": "0.3.1"
+  },
+  "method": "Private module bundle, local identifier renaming, minification, decimal string escapes"
+}

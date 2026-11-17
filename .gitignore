@@ -1,0 +1,6 @@
+# Readable development sources stay on this workstation.
+/moonloader/AimLock.lua
+/moonloader/lib/arfie_hit_distribution/
+
+# Release build dependencies.
+/tools/node_modules/

@@ -1,0 +1,4 @@
+# Preserve published bytes so manifest SHA256 values survive clone/download.
+/moonloader/AimLock*.lua -text
+/moonloader/AimLock*.manifest.json -text
+/moonloader/config/*.ini -text
