@@ -20,6 +20,7 @@ local Settings = loader('AimLockDistribution.settings')
 local Camera = loader('AimLockDistribution.camera')
 local Controller = loader('AimLockDistribution.controller')
 local World = loader('AimLockDistribution.world')
+local AimPoint = loader('AimLockDistribution.aim_point')
 local passed, failed = 0, 0
 local function equal(a, b) assert(a == b, tostring(a) .. ' ~= ' .. tostring(b)) end
 local function near(a, b) assert(math.abs(a - b) < 1e-8, tostring(a) .. ' != ' .. tostring(b)) end
@@ -48,7 +49,7 @@ end)
 test('INI accepts BOM CRLF comments and shipped configuration', function()
     local settings = assert(Settings.parse('\239\187\191[aimlock]\r\nenabled=false ; off\r\nmax_distance=75\r\n'))
     equal(settings.enabled, false); equal(settings.max_distance, 75)
-    equal(assert(Settings.load('./moonloader/config/AimLock1.1.0.ini')).enabled, false)
+    equal(assert(Settings.load('./moonloader/config/AimLock1.2.0.ini')).enabled, false)
 end)
 test('INI rejects missing section, duplicates, invalid booleans and damaged lines', function()
     for _, text in ipairs({ '', 'enabled=false', '[bad]', '[aimlock]\nenabled=1',
@@ -116,7 +117,7 @@ end)
 
 local function scene()
     local state={dead={},gone={},npc={},bots={},hidden={},walls={},positions={[1]={0,0,0},[2]={10,0,0},[3]={20,0,0}},
-        screen={[2]={530,400},[3]={540,400}},writes={},messages={},logs={},keys={},ready=true,weapon=24}
+        screen={[2]={530,400},[3]={540,400}},writes={},messages={},logs={},keys={},ready=true,weapon=24,time=0}
     local api={PLAYER_PED=1}
     state.api=api
     api.doesCharExist=function(ped) return not state.gone[ped] end
@@ -125,7 +126,16 @@ local function scene()
     api.sampIsPlayerNpc=function(id) return state.bots[id] or false end
     api.getCharCoordinates=function(ped) return unpack(assert(state.positions[ped])) end
     api.getAllChars=function() return {1,2,3} end
-    api.convert3DCoordsToScreenEx=function(x) local id=x==10 and 2 or 3; return not state.hidden[id], unpack(state.screen[id]) end
+    api.convert3DCoordsToScreenEx=function(x)
+        local id=math.abs(x-10)<1 and 2 or 3
+        return not state.hidden[id], unpack(state.screen[id])
+    end
+    api.getGameTimer=function() return state.time end
+    api.getOffsetFromCharInWorldCoords=function(ped,x,y,z)
+        local position=state.positions[ped]
+        state.last_offset={ped=ped,x=x,y=y,z=z}
+        return position[1]+x,position[2]+y,position[3]+z
+    end
     api.getScreenResolution=function() return 1000,1000 end
     api.getActiveCameraCoordinates=function() return 0,0,0 end
     api.getActiveCameraPointAt=function() return 1,0,0 end
@@ -135,7 +145,7 @@ local function scene()
         return not state.walls[x]
     end
     api.setCameraPositionUnfixed=function(pitch,yaw) state.writes[#state.writes+1]={pitch,yaw} end
-    state.world=World.new(assert(Settings.validate({})),api)
+    state.world=World.new(assert(Settings.validate({random_aim=false})),api)
     return state
 end
 test('world selects nearest crosshair player and writes actual camera API', function()
@@ -185,7 +195,7 @@ local function entry()
     return s
 end
 test('entrypoint starts OFF, Ctrl X enables real camera writes and disables again', function()
-    local s=entry(); s.tick(); equal(s.env.version,'1.1.0'); equal(#s.writes,0)
+    local s=entry(); s.tick(); equal(s.env.version,'1.2.0'); equal(#s.writes,0)
     s.keys={[17]=true,[88]=true,[2]=true}; s.tick(); equal(#s.writes,1)
     s.tick(); equal(#s.writes,2)
     s.keys={[2]=true}; s.tick(); equal(#s.writes,3)
@@ -214,6 +224,115 @@ test('entrypoint reports missing APIs and missing INI without camera access', fu
     equal(coroutine.status(s.thread),'dead'); assert(#s.logs>0)
     s=entry(); s.env.getWorkingDirectory=function() return './tests/missing-directory' end; s.tick()
     equal(coroutine.status(s.thread),'dead'); equal(#s.writes,0); assert(#s.logs>0)
+end)
+
+local function point_settings(values)
+    values=values or {}
+    values.random_seed=12345
+    return assert(Settings.validate(values))
+end
+test('random defaults match legacy INI weights and distribution snapshots are independent', function()
+    local settings=assert(Settings.load('./moonloader/config/AimLock1.2.0.ini'))
+    equal(settings.random_aim,true); equal(settings.random_interval_ms,300)
+    local expected={torso=20,left_arm=20,right_arm=20,left_leg=15,right_leg=15,head=10}
+    for key,value in pairs(expected) do equal(settings.distribution[key],value) end
+    settings.distribution.head=100
+    equal(Settings.validate({}).distribution.head,10)
+end)
+test('random settings reject invalid weights intervals seeds and unknown sections', function()
+    local bad=point_settings(); bad.distribution.head=0
+    equal(Settings.validate(bad),nil)
+    bad=point_settings(); bad.distribution.left_arm=-1; equal(Settings.validate(bad),nil)
+    for _,value in ipairs({0,99,5001,100.5,math.huge,0/0}) do
+        equal(Settings.validate({random_interval_ms=value}),nil)
+    end
+    equal(Settings.validate({random_aim='true'}),nil)
+    equal(Settings.validate({random_seed=0}),nil)
+    equal(Settings.parse('[aimlock]\ndistribution=1'),nil)
+    equal(Settings.parse('[aimlock]\n[distribution]\nhead=100'),nil)
+    equal(Settings.parse('[aimlock]\n[distribution]\n[distribution]'),nil)
+end)
+test('INI loads complete distribution and reproducible random seed', function()
+    local settings=assert(Settings.parse('[aimlock]\nrandom_seed=12345\nrandom_interval_ms=500\n'
+        ..'[distribution]\ntorso=0\nleft_arm=0\nright_arm=0\nleft_leg=0\nright_leg=0\nhead=100'))
+    equal(settings.distribution.head,100); equal(settings.random_seed,12345)
+    equal(settings.random_interval_ms,500)
+end)
+test('body selections follow weighted boundaries and exclude zero weights', function()
+    local expected={{0,'torso'},{0.19999,'torso'},{0.2,'left_arm'},{0.4,'right_arm'},
+        {0.6,'left_leg'},{0.75,'right_leg'},{0.9,'head'},{0.99999,'head'}}
+    for _,item in ipairs(expected) do
+        local sampler=assert(AimPoint.new(point_settings(),function() return item[1] end))
+        equal(assert(sampler:select({ped=2,id=102},0)).key,item[2])
+    end
+    local settings=point_settings()
+    for key in pairs(settings.distribution) do settings.distribution[key]=key=='head' and 100 or 0 end
+    local sampler=assert(AimPoint.new(settings,function() return 0 end))
+    for time=0,1000,100 do equal(assert(sampler:select({ped=2,id=102},time)).key,'head') end
+end)
+test('same player stays locked while body point changes only when interval expires', function()
+    local calls=0
+    local sampler=assert(AimPoint.new(point_settings(),function()
+        calls=calls+1; return calls==1 and 0 or 0.99
+    end))
+    for _,time in ipairs({0,1,100,299}) do
+        equal(assert(sampler:select({ped=2,id=102},time)).key,'torso')
+    end
+    equal(calls,1)
+    equal(assert(sampler:select({ped=2,id=102},300)).key,'head'); equal(calls,2)
+end)
+test('target identity change reset and unsigned timer rollover resample correctly', function()
+    local calls=0
+    local sampler=assert(AimPoint.new(point_settings(),function() calls=calls+1; return 0 end))
+    assert(sampler:select({ped=2,id=102},4294967200))
+    assert(sampler:select({ped=2,id=102},199)); equal(calls,1)
+    assert(sampler:select({ped=2,id=102},204)); equal(calls,2)
+    assert(sampler:select({ped=2,id=103},205)); equal(calls,3)
+    sampler:reset(); assert(sampler:select({ped=2,id=103},206)); equal(calls,4)
+    equal(sampler:select({ped=2,id=103},math.huge),nil)
+end)
+test('random body points alter actual camera pitch without switching player', function()
+    local s=scene(); local calls=0
+    s.world=World.new(point_settings(),s.api,function() calls=calls+1; return calls==1 and 0 or 0.99 end)
+    local target=assert(s.world:find_target())
+    assert(s.world:point_at(target)); equal(target.body_part,'torso')
+    s.time=300; target=assert(s.world:validate_target(target))
+    assert(s.world:point_at(target)); equal(target.body_part,'head'); equal(target.ped,2)
+    near(s.writes[1][1],math.atan(0.3/10)); near(s.writes[2][1],math.atan(0.8/10))
+    s.screen[2]={900,900}
+    assert(s.world:validate_target(target),'Locked target must survive random aim moving the anchor out of acquisition FOV')
+    equal(s.world:validate_target({ped=2}),nil)
+end)
+test('left and right body points use ped-local offsets and stay stable between draws', function()
+    for _,item in ipairs({{0.2,-0.28},{0.4,0.28},{0.6,-0.15},{0.75,0.15}}) do
+        local s=scene(); s.world=World.new(point_settings(),s.api,function() return item[1] end)
+        local target=assert(s.world:find_target()); assert(s.world:point_at(target))
+        near(s.last_offset.x,item[2]); equal(s.last_offset.ped,2)
+    end
+end)
+test('an occluded selected body point does not release the locked player', function()
+    local s=scene(); s.world=World.new(point_settings(),s.api,function() return 0.99 end)
+    local controller=Controller.new({enabled=true},{on_toggle=function() end,
+        find_target=function() return s.world:find_target() end,
+        validate_target=function(target) return s.world:validate_target(target) end,
+        point_at=function(target) return s.world:point_at(target) end})
+    local line_of_sight=s.api.isLineOfSightClear
+    s.api.isLineOfSightClear=function(a,b,c,x,y,z,...)
+        if z>0.7 then return false end
+        return line_of_sight(a,b,c,x,y,z,...)
+    end
+    equal(controller:step({aiming=true,blocked=false,ctrl=false,x=false}),false)
+    equal(assert(controller.target).ped,2); equal(#s.writes,0)
+    equal(controller:step({aiming=true,blocked=false,ctrl=false,x=false}),false)
+    equal(controller.target.ped,2)
+end)
+test('entrypoint resets selection after release and OFF stops writes with random aim active', function()
+    local s=entry(); s.tick(); s.keys={[17]=true,[88]=true,[2]=true}; s.tick()
+    equal(#s.writes,1); assert(s.last_offset)
+    s.keys={}; s.tick(); equal(#s.writes,1)
+    s.time=1000; s.keys={[2]=true}; s.tick(); equal(#s.writes,2)
+    s.keys={[17]=true,[88]=true,[2]=true}; s.tick(); equal(#s.writes,2)
+    assert(table.concat(s.messages,'\n'):find('Random aim: ON',1,true))
 end)
 
 print(string.format('\n%d passed; %d failed',passed,failed))

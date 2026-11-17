@@ -1,5 +1,7 @@
 # AimLock 1.1.0
 
+Dokumentasi arsip versi kamera dengan titik tetap. Source dan alat build aktif sekarang menghasilkan [versi random aim 1.2.0](AimLock-random-aim-1.2.0.md). Hasil pengujian 1.1.0 di bawah adalah catatan saat versi tersebut dibuat; untuk mereproduksinya gunakan suite pada commit `a6f936d`. Suite `tests/aimlock_spec.lua` saat ini menguji versi terbaru.
+
 ## Perilaku yang diimplementasikan
 
 AimLock 1.1.0 mengubah sudut kamera agar crosshair mengikuti pemain SA-MP yang memenuhi pemilihan target. Pengguna menyalakan/mematikan fitur dengan Ctrl + X. Default OFF, dan penguncian hanya berjalan saat klik kanan ditahan, karakter lokal hidup serta berjalan kaki, sudah spawn, dan memegang senjata ID 22..32.

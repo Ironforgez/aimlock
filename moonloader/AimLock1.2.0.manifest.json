@@ -1,0 +1,55 @@
+{
+  "version": "1.2.0",
+  "artifact": "moonloader/AimLock1.2.0.lua",
+  "artifact_sha256": "0ea227096181395083910cd6521170db1418d68df96c9fdea7c304633cd5beec",
+  "source_set_sha256": "1ff2ccfbf40588ad19b48ef518d5c976173adfa30b42695de0e5b8806320e055",
+  "sources": [
+    {
+      "path": "moonloader/AimLock.lua",
+      "sha256": "e6b1405f040088bcfc86513fc8242bba54454263c17e39aba19014d7e0bb13d1"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/config.lua",
+      "sha256": "6e114b400fb737e981019a6478c1a1fb64eca968580c0e916b2b40d5321ad8e5"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/random.lua",
+      "sha256": "ad7ce6bdf047ffe528d9ff874a5be7651053b3e97aa912ac61db0d72169139b4"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/engine.lua",
+      "sha256": "2dd4101cbcaa24361d6043a2dcdc80c678509c76cc4686b8804270e54fcd91e7"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/settings.lua",
+      "sha256": "bec48742d6ad30e5740c6eabc91151596b6f84ceacbaa879d3f24b756bbda6f1"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/aim_point.lua",
+      "sha256": "bfdf7eb0320204ccb752a54e912534303e88b9420191e79f86092cff0094f955"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/camera.lua",
+      "sha256": "08f81ed72aa803d5ba719150540ac98526b27793ef6d05730543140a7f6a0a63"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/controller.lua",
+      "sha256": "34b8f02fb564308dcbc8fa497f68e2e5a39468e00857f731c7297766700d56b2"
+    },
+    {
+      "path": "moonloader/lib/AimLockDistribution/world.lua",
+      "sha256": "91ca63708f32a824f42ab2e9d1f4b83a501a5ec6c76c64c66eccae19ba3f84cb"
+    }
+  ],
+  "configuration": {
+    "path": "moonloader/config/AimLock1.2.0.ini",
+    "sha256": "fc65519fb0485ef542f5f4b159273559357d32440069e7bbc32f9329b33d5e22"
+  },
+  "modules": 8,
+  "encoded_strings": 200,
+  "tools": {
+    "luamin": "1.0.4",
+    "luaparse": "0.3.1"
+  },
+  "method": "Private module bundle, local identifier renaming, minification, decimal string escapes"
+}
